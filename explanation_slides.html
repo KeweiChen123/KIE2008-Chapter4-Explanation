@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 4: Analog to Digital Conversion — KIE2008 Communication Systems</title>
+<meta name="description" content="Interactive explanation slides for KIE2008 Chapter 4 – Sampling, Quantization, Encoding, and Waveform Encoding explained clearly for students.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+    svg: { fontCache: 'global' },
+    startup: { pageReady: () => MathJax.startup.defaultPageReady() }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e1a;--surface:#111827;--surface2:#1e293b;--surface3:#283347;
+  --accent:#6366f1;--accent2:#818cf8;--accent3:#a5b4fc;
+  --green:#34d399;--green-bg:rgba(52,211,153,.08);
+  --amber:#fbbf24;--amber-bg:rgba(251,191,36,.08);
+  --rose:#fb7185;--rose-bg:rgba(251,113,133,.08);
+  --cyan:#22d3ee;--cyan-bg:rgba(34,211,238,.08);
+  --text:#e2e8f0;--text-dim:#94a3b8;--text-bright:#f8fafc;
+  --radius:16px;--radius-sm:10px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden}
+
+/* ─── Top navigation bar ─── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,14,26,.85);backdrop-filter:blur(20px) saturate(1.4);border-bottom:1px solid rgba(99,102,241,.15);padding:0 24px;display:flex;align-items:center;height:60px;gap:16px}
+.topbar .logo{font-weight:800;font-size:15px;background:linear-gradient(135deg,var(--accent2),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.topbar .chapter-title{font-size:13px;color:var(--text-dim);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.progress-track{position:fixed;top:60px;left:0;right:0;height:3px;background:var(--surface2);z-index:99}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));width:0%;transition:width .3s ease}
+
+/* ─── Sidebar / TOC ─── */
+.sidebar{position:fixed;top:60px;left:0;bottom:0;width:280px;background:var(--surface);border-right:1px solid rgba(99,102,241,.1);overflow-y:auto;padding:20px 0;z-index:90;transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.sidebar.collapsed{transform:translateX(-280px)}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:4px}
+.toc-section{padding:6px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent2);margin-top:16px}
+.toc-item{display:block;padding:8px 20px 8px 28px;font-size:13px;color:var(--text-dim);text-decoration:none;border-left:3px solid transparent;transition:all .2s ease;cursor:pointer}
+.toc-item:hover{color:var(--text);background:rgba(99,102,241,.05);border-left-color:var(--accent3)}
+.toc-item.active{color:var(--accent2);background:rgba(99,102,241,.08);border-left-color:var(--accent);font-weight:600}
+
+/* ─── Main content ─── */
+.main{margin-left:280px;padding:80px 40px 120px;max-width:960px;transition:margin-left .35s cubic-bezier(.4,0,.2,1)}
+.main.expanded{margin-left:0}
+
+/* ─── Sidebar toggle ─── */
+.sidebar-toggle{position:fixed;top:70px;left:280px;z-index:95;width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--surface3);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-dim);font-size:14px;transition:all .35s cubic-bezier(.4,0,.2,1)}
+.sidebar-toggle:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sidebar.collapsed~.sidebar-toggle{left:8px}
+
+/* ─── Section styling ─── */
+.section{margin-bottom:80px;animation:fadeUp .6s ease both}
+.section-number{font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+.section h2{font-size:32px;font-weight:800;color:var(--text-bright);margin-bottom:24px;line-height:1.2}
+.section h3{font-size:22px;font-weight:700;color:var(--text-bright);margin:40px 0 16px;padding-left:14px;border-left:4px solid var(--accent)}
+.section h4{font-size:17px;font-weight:600;color:var(--accent3);margin:28px 0 12px}
+
+/* ─── Cards ─── */
+.card{background:var(--surface);border:1px solid rgba(99,102,241,.1);border-radius:var(--radius);padding:28px 32px;margin:20px 0;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--cyan));opacity:0;transition:opacity .3s}
+.card:hover::before{opacity:1}
+
+.card.definition{border-left:4px solid var(--accent)}
+.card.definition::after{content:'📐';position:absolute;top:16px;right:20px;font-size:24px;opacity:.4}
+
+.card.warning{border-left:4px solid var(--amber);background:var(--amber-bg)}
+.card.warning::after{content:'⚠️';position:absolute;top:16px;right:20px;font-size:22px;opacity:.5}
+
+.card.tip{border-left:4px solid var(--green);background:var(--green-bg)}
+.card.tip::after{content:'💡';position:absolute;top:16px;right:20px;font-size:22px;opacity:.5}
+
+.card.confusion{border-left:4px solid var(--rose);background:var(--rose-bg)}
+.card.confusion::after{content:'🤔';position:absolute;top:16px;right:20px;font-size:22px;opacity:.5}
+
+.card.example{border-left:4px solid var(--cyan);background:var(--cyan-bg)}
+.card.example::after{content:'✏️';position:absolute;top:16px;right:20px;font-size:22px;opacity:.5}
+
+.card-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
+.card.definition .card-label{color:var(--accent2)}
+.card.warning .card-label{color:var(--amber)}
+.card.tip .card-label{color:var(--green)}
+.card.confusion .card-label{color:var(--rose)}
+.card.example .card-label{color:var(--cyan)}
+
+/* ─── Step blocks ─── */
+.steps{counter-reset:step;margin:16px 0}
+.step{counter-increment:step;padding:16px 16px 16px 56px;position:relative;border-left:2px solid var(--surface3);margin-left:18px}
+.step::before{content:counter(step);position:absolute;left:-16px;top:14px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+.step:last-child{border-left-color:transparent}
+
+/* ─── Equation display ─── */
+.equation-box{background:var(--surface2);border:1px solid var(--surface3);border-radius:var(--radius-sm);padding:20px 28px;margin:16px 0;text-align:center;font-size:17px;overflow-x:auto}
+
+/* ─── Comparison table ─── */
+.comp-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}
+.comp-table th{background:var(--accent);color:#fff;padding:12px 16px;text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:1px}
+.comp-table td{padding:12px 16px;border-bottom:1px solid var(--surface3);vertical-align:top}
+.comp-table tr:nth-child(even) td{background:rgba(99,102,241,.03)}
+.comp-table tr:hover td{background:rgba(99,102,241,.06)}
+
+/* ─── SVG diagrams ─── */
+.diagram-container{display:flex;justify-content:center;margin:24px 0;overflow-x:auto}
+.diagram-container svg{max-width:100%;height:auto}
+
+/* ─── Tags / pills ─── */
+.tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.5px;margin:2px 4px 2px 0}
+.tag.purple{background:rgba(99,102,241,.15);color:var(--accent2)}
+.tag.green{background:rgba(52,211,153,.15);color:var(--green)}
+.tag.amber{background:rgba(251,191,36,.15);color:var(--amber)}
+.tag.rose{background:rgba(251,113,133,.15);color:var(--rose)}
+.tag.cyan{background:rgba(34,211,238,.15);color:var(--cyan)}
+
+/* ─── Lists ─── */
+.main ul,.main ol{padding-left:24px;margin:10px 0}
+.main li{margin:6px 0;color:var(--text)}
+.main li::marker{color:var(--accent2)}
+
+/* ─── Code / mono ─── */
+code,.mono{font-family:'JetBrains Mono',monospace;font-size:.92em;background:var(--surface2);padding:2px 7px;border-radius:5px;color:var(--accent3)}
+
+/* ─── Keyframes ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── Responsive ─── */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-280px)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0 !important;padding:80px 20px 100px}
+  .sidebar-toggle{left:8px}
+}
+
+/* ─── Keyboard navigation hint ─── */
+.nav-hint{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--surface3);border-radius:var(--radius-sm);padding:10px 18px;font-size:12px;color:var(--text-dim);z-index:80;display:flex;gap:14px;align-items:center}
+.nav-hint kbd{background:var(--surface3);padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);border:1px solid rgba(255,255,255,.1)}
+
+/* ─── Collapsible proof / derivation ─── */
+details{margin:12px 0}
+details summary{cursor:pointer;font-weight:600;color:var(--accent2);padding:8px 0;font-size:15px;list-style:none;display:flex;align-items:center;gap:8px}
+details summary::before{content:'▶';font-size:10px;transition:transform .25s}
+details[open] summary::before{transform:rotate(90deg)}
+details .proof-content{padding:16px 0 8px 20px;border-left:2px solid var(--surface3)}
+
+/* ─── Animated flow diagram blocks ─── */
+.flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;justify-content:center;margin:24px 0}
+.flow-block{background:linear-gradient(135deg,var(--surface2),var(--surface3));border:1px solid rgba(99,102,241,.2);border-radius:var(--radius-sm);padding:14px 22px;text-align:center;font-size:14px;font-weight:600;color:var(--text-bright);min-width:120px;transition:transform .2s,box-shadow .2s}
+.flow-block:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(99,102,241,.2)}
+.flow-arrow{color:var(--accent2);font-size:22px;padding:0 6px;flex-shrink:0}
+.flow-label{font-size:11px;color:var(--text-dim);font-weight:400;margin-top:4px}
+
+/* ─── Highlight ─── */
+mark{background:rgba(99,102,241,.2);color:var(--accent3);padding:1px 4px;border-radius:3px}
+strong{color:var(--text-bright)}
+</style>
+</head>
+<body>
+
+<!-- ═══════ Top Bar ═══════ -->
+<div class="topbar">
+  <div class="logo">KIE2008</div>
+  <div class="chapter-title">Chapter 4 — Analog to Digital Conversion</div>
+</div>
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- ═══════ Sidebar ═══════ -->
+<nav class="sidebar" id="sidebar">
+  <div class="toc-section">Overview</div>
+  <a class="toc-item" href="#intro">Introduction</a>
+  <a class="toc-item" href="#three-steps">The Three Steps</a>
+
+  <div class="toc-section">Part I — Sampling</div>
+  <a class="toc-item" href="#sampling-intuition">Intuition & Motivation</a>
+  <a class="toc-item" href="#sampling-theorem">Sampling Theorem</a>
+  <a class="toc-item" href="#reconstruction">Reconstruction Formula</a>
+  <a class="toc-item" href="#proof">Proof (Frequency Domain)</a>
+  <a class="toc-item" href="#aliasing">Aliasing & Nyquist Rate</a>
+  <a class="toc-item" href="#guard-band">Guard Band</a>
+  <a class="toc-item" href="#sampling-examples">Worked Examples</a>
+
+  <div class="toc-section">Part II — Quantization</div>
+  <a class="toc-item" href="#quant-intro">What is Quantization?</a>
+  <a class="toc-item" href="#scalar-quant">Scalar Quantization</a>
+  <a class="toc-item" href="#distortion">Distortion & SQNR</a>
+  <a class="toc-item" href="#uniform-quant">Uniform Quantizer</a>
+  <a class="toc-item" href="#nonuniform-quant">Nonuniform (Lloyd-Max)</a>
+  <a class="toc-item" href="#quant-examples">Worked Examples</a>
+
+  <div class="toc-section">Part III — Encoding</div>
+  <a class="toc-item" href="#encoding">Encoding Schemes</a>
+
+  <div class="toc-section">Part IV — Waveform Encoding</div>
+  <a class="toc-item" href="#pcm">Pulse Code Modulation</a>
+  <a class="toc-item" href="#pcm-sqnr">PCM SQNR & Bandwidth</a>
+  <a class="toc-item" href="#nonuniform-pcm">Nonuniform PCM (Companding)</a>
+  <a class="toc-item" href="#dpcm">Differential PCM (DPCM)</a>
+  <a class="toc-item" href="#dm">Delta Modulation (DM)</a>
+  <a class="toc-item" href="#adm">Adaptive DM (ADM)</a>
+  <a class="toc-item" href="#pcm-examples">Worked Examples</a>
+
+  <div class="toc-section">Summary</div>
+  <a class="toc-item" href="#summary">Chapter Summary</a>
+</nav>
+
+<button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">◀</button>
+
+<!-- ═══════ Main Content ═══════ -->
+<div class="main" id="mainContent">
+
+<!-- ============================================================ -->
+<!--                     INTRODUCTION                              -->
+<!-- ============================================================ -->
+<div class="section" id="intro">
+  <div class="section-number">Chapter 4</div>
+  <h2>Analog to Digital Conversion</h2>
+  <p style="font-size:18px;color:var(--text-dim);margin-bottom:28px">
+    Reference: Proakis & Salehi (2014), <em>Fundamentals of Communication Systems</em>, Chapter 7
+  </p>
+
+  <div class="card">
+    <p>In earlier chapters you learned how to transmit analog signals using analog modulation (AM, FM, PM). But <strong>digital communication systems</strong> offer huge advantages:</p>
+    <ul>
+      <li><strong>Higher noise immunity</strong> — digital signals can be regenerated perfectly at repeaters</li>
+      <li><strong>Flexible bandwidth–power tradeoff</strong> — you can trade bits for SNR</li>
+      <li><strong>Encryption & anti-jamming</strong> — easy to apply cryptographic techniques</li>
+      <li><strong>VLSI implementation</strong> — digital circuits are cheap to mass-produce</li>
+    </ul>
+    <p style="margin-top:14px">The <mark>first step</mark> in any digital communication system is converting the analog source signal into a digital (binary) representation. That's what this chapter is about.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--              THE THREE STEPS — BIG PICTURE                     -->
+<!-- ============================================================ -->
+<div class="section" id="three-steps">
+  <div class="section-number">Big Picture</div>
+  <h2>The Three Steps of A/D Conversion</h2>
+
+  <div class="flow">
+    <div class="flow-block" style="border-color:var(--accent)">Analog Signal<div class="flow-label">Continuous-time,<br>Continuous-amplitude</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block" style="border-color:var(--cyan)">① Sampling<div class="flow-label">Discrete-time,<br>Continuous-amplitude</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block" style="border-color:var(--green)">② Quantization<div class="flow-label">Discrete-time,<br>Discrete-amplitude</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block" style="border-color:var(--amber)">③ Encoding<div class="flow-label">Binary bits<br>(1s and 0s)</div></div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <strong>Sampling</strong> — Take "snapshots" of the analog signal at regular time intervals \(T_s\). The sampled values can still be <em>any</em> real number (infinite precision).
+    </div>
+    <div class="step">
+      <strong>Quantization</strong> — Round each sample to the nearest value from a <em>finite</em> set of allowed levels. This introduces a small error called <strong>quantization noise</strong>.
+    </div>
+    <div class="step">
+      <strong>Encoding</strong> — Assign a unique binary codeword (e.g. <code>011</code>) to each quantization level. If there are \(N\) levels, you need \(v = \log_2 N\) bits per sample.
+    </div>
+  </div>
+
+  <div class="card confusion">
+    <div class="card-label">Common confusion</div>
+    <p><strong>Why can't we skip quantization?</strong> After sampling, each value is still a real number with infinite decimal digits. You can't transmit infinite precision digitally — you'd need infinite bits! Quantization is the step that makes the representation <em>finite</em>, at the cost of a small, controlled error.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--              PART I — SAMPLING                                 -->
+<!-- ============================================================ -->
+<div class="section" id="sampling-intuition">
+  <div class="section-number">Part I — Sampling</div>
+  <h2>Intuition & Motivation</h2>
+
+  <div class="card">
+    <p>Imagine two signals:</p>
+    <ul>
+      <li><strong>\(x_1(t)\)</strong> — a smooth, slowly changing signal (low-frequency content). You only need a few samples to "sketch" it.</li>
+      <li><strong>\(x_2(t)\)</strong> — a rapidly wiggling signal (high-frequency content). You need <em>many more</em> samples to capture the wiggles.</li>
+    </ul>
+    <p style="margin-top:12px">The key insight: <mark>the faster the signal changes (higher bandwidth), the more frequently you must sample it.</mark></p>
+  </div>
+
+  <div class="card tip">
+    <div class="card-label">Think of it like this</div>
+    <p>Imagine filming a spinning wheel. If your camera's frame rate is too slow, the wheel appears to spin <em>backwards</em> — that's the visual equivalent of aliasing! You need enough frames (samples) per rotation (cycle) to correctly capture the motion.</p>
+  </div>
+</div>
+
+<!-- ─── Sampling Theorem ─── -->
+<div class="section" id="sampling-theorem">
+  <h3>The Sampling Theorem</h3>
+
+  <div class="card definition">
+    <div class="card-label">Theorem (Nyquist–Shannon)</div>
+    <p>If a signal \(x(t)\) is <strong>bandlimited</strong> to \(W\) Hz — meaning \(X(f) = 0\) for all \(|f| \geq W\) — then it is <em>completely determined</em> by its samples taken at intervals:</p>
+    <div class="equation-box">
+      \[ T_s \leq \frac{1}{2W} \qquad \Longleftrightarrow \qquad f_s \geq 2W \]
+    </div>
+    <p style="margin-top:12px">The minimum sampling rate \(f_s = 2W\) is called the <strong>Nyquist rate</strong>. The corresponding sampling interval is the <strong>Nyquist interval</strong> \(T_s = \frac{1}{2W}\).</p>
+  </div>
+
+  <div class="card confusion">
+    <div class="card-label">Students often ask</div>
+    <p><strong>"What does bandlimited mean exactly?"</strong> — A bandlimited signal has zero energy at frequencies above \(W\). In practice, no real signal is perfectly bandlimited, so we use an <strong>anti-aliasing filter</strong> (a lowpass filter with cutoff \(W\)) <em>before</em> sampling to enforce this condition.</p>
+  </div>
+
+  <h4>What happens at exactly the Nyquist rate?</h4>
+  <p>At exactly \(f_s = 2W\), reconstruction is <em>theoretically</em> possible but requires an <strong>ideal lowpass filter</strong> (a "brick wall" in the frequency domain and an infinitely long \(\text{sinc}\) in time) — which is physically impossible to build. That's why practical systems always sample <strong>above</strong> the Nyquist rate.</p>
+</div>
+
+<!-- ─── Reconstruction ─── -->
+<div class="section" id="reconstruction">
+  <h3>Reconstruction Formula</h3>
+
+  <p>Given samples \(\{x(nT_s)\}\), the original signal can be reconstructed <em>exactly</em> (assuming \(f_s \geq 2W\)):</p>
+
+  <div class="equation-box">
+    \[ x(t) = \sum_{n=-\infty}^{\infty} x(nT_s) \;\text{sinc}\!\left(\frac{t}{T_s} - n\right) \]
+  </div>
+  <p style="text-align:center;color:var(--text-dim);font-size:13px;margin-top:6px">(Special case when sampling at exactly the Nyquist rate: \(W' = W = \frac{1}{2T_s}\))</p>
+
+  <div class="card tip">
+    <div class="card-label">What is sinc?</div>
+    <p>The sinc function is defined as \(\text{sinc}(x) = \frac{\sin(\pi x)}{\pi x}\). Its key property: it equals <strong>1 at \(x = 0\)</strong> and <strong>0 at every other integer</strong>. This means each sinc "picks out" exactly one sample value and contributes zero at all other sample times — perfect interpolation!</p>
+  </div>
+
+  <h4>More General Reconstruction</h4>
+  <p>The general formula (for oversampling, where \(f_s > 2W\)) uses an arbitrary \(W'\) where \(W \leq W' \leq \frac{1}{T_s} - W\):</p>
+  <div class="equation-box">
+    \[ x(t) = \sum_{n=-\infty}^{\infty} 2W'T_s \cdot x(nT_s)\;\text{sinc}\!\bigl(2W'(t - nT_s)\bigr) \]
+  </div>
+
+  <div class="card confusion">
+    <div class="card-label">Why do students get confused here?</div>
+    <p><strong>Linear interpolation vs. sinc interpolation:</strong> Connecting samples with straight lines (linear interpolation) gives only an <em>approximation</em>. Using sinc functions gives <strong>perfect reconstruction</strong> — but only if the sampling theorem conditions are met. The sinc-based formula is a mathematical ideal; in practice, we approximate it with realizable filters.</p>
+  </div>
+</div>
+
+<!-- ─── Proof ─── -->
+<div class="section" id="proof">
+  <h3>Proof of the Sampling Theorem</h3>
+
+  <details>
+    <summary>Click to expand the full frequency-domain proof</summary>
+    <div class="proof-content">
+
+      <h4>Step 1 — Impulse Sampling</h4>
+      <p>Model sampling as multiplication with an impulse train:</p>
+      <div class="equation-box">
+        \[ x_\delta(t) = x(t) \cdot \sum_{n=-\infty}^{\infty} \delta(t - nT_s) = \sum_{n=-\infty}^{\infty} x(nT_s)\,\delta(t - nT_s) \]
+      </div>
+
+      <h4>Step 2 — Fourier Transform</h4>
+      <p>The Fourier transform of a periodic impulse train is another impulse train (scaled by \(1/T_s\)):</p>
+      <div class="equation-box">
+        \[ \mathcal{F}\left\{\sum_{n} \delta(t - nT_s)\right\} = \frac{1}{T_s} \sum_{n} \delta\!\left(f - \frac{n}{T_s}\right) \]
+      </div>
+      <p>Multiplying in time ↔ convolution in frequency:</p>
+      <div class="equation-box">
+        \[ X_\delta(f) = X(f) * \frac{1}{T_s}\sum_n \delta\!\left(f - \frac{n}{T_s}\right) = \frac{1}{T_s}\sum_{n=-\infty}^{\infty} X\!\left(f - \frac{n}{T_s}\right) \]
+      </div>
+
+      <h4>Step 3 — Interpretation</h4>
+      <p>The spectrum of the sampled signal is just <strong>copies (replicas) of \(X(f)\) shifted by multiples of \(f_s = 1/T_s\)</strong>, each scaled by \(1/T_s\).</p>
+      <ul>
+        <li>If \(f_s \geq 2W\): the copies <strong>don't overlap</strong> → we can extract the original with a lowpass filter ✅</li>
+        <li>If \(f_s < 2W\): the copies <strong>overlap (aliasing)</strong> → information is irreversibly lost ❌</li>
+      </ul>
+
+      <h4>Step 4 — Lowpass Filter Recovery</h4>
+      <p>Apply an ideal lowpass filter with bandwidth \(W'\) and gain \(T_s\):</p>
+      <div class="equation-box">
+        \[ H(f) = T_s \cdot \Pi\!\left(\frac{f}{2W'}\right) \qquad \Longrightarrow \qquad X(f) = X_\delta(f) \cdot H(f) \]
+      </div>
+      <p>Taking the inverse FT gives the reconstruction formula with sinc interpolation. ∎</p>
+    </div>
+  </details>
+
+  <div class="card tip">
+    <div class="card-label">Key takeaway from the proof</div>
+    <p>Sampling in time creates <strong>periodic repetitions</strong> of the spectrum. If these copies don't overlap, a lowpass filter can perfectly isolate the original. If they do overlap, you get <strong>aliasing</strong> — and no filter can undo it.</p>
+  </div>
+</div>
+
+<!-- ─── Aliasing ─── -->
+<div class="section" id="aliasing">
+  <h3>Aliasing & the Nyquist Rate</h3>
+
+  <!-- SVG diagram of aliasing vs no aliasing -->
+  <div class="diagram-container">
+    <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" style="max-width:680px">
+      <!-- No aliasing -->
+      <text x="350" y="22" text-anchor="middle" fill="#a5b4fc" font-size="14" font-weight="700">Adequate Sampling (f_s ≥ 2W) — No Overlap</text>
+      <line x1="40" y1="110" x2="660" y2="110" stroke="#334155" stroke-width="1"/>
+      <text x="350" y="126" text-anchor="middle" fill="#64748b" font-size="11">f</text>
+      <!-- Original centered -->
+      <polygon points="250,110 350,40 450,110" fill="rgba(99,102,241,.25)" stroke="#6366f1" stroke-width="2"/>
+      <text x="350" y="56" text-anchor="middle" fill="#818cf8" font-size="11">X(f)</text>
+      <!-- Copy left -->
+      <polygon points="50,110 150,55 250,110" fill="rgba(99,102,241,.1)" stroke="#6366f1" stroke-width="1" stroke-dasharray="4"/>
+      <text x="150" y="72" text-anchor="middle" fill="#475569" font-size="10">copy</text>
+      <!-- Copy right -->
+      <polygon points="450,110 550,55 650,110" fill="rgba(99,102,241,.1)" stroke="#6366f1" stroke-width="1" stroke-dasharray="4"/>
+      <text x="550" y="72" text-anchor="middle" fill="#475569" font-size="10">copy</text>
+      <text x="250" y="140" text-anchor="middle" fill="#34d399" font-size="11">-W</text>
+      <text x="450" y="140" text-anchor="middle" fill="#34d399" font-size="11">W</text>
+      <line x1="250" y1="105" x2="250" y2="115" stroke="#34d399" stroke-width="2"/>
+      <line x1="450" y1="105" x2="450" y2="115" stroke="#34d399" stroke-width="2"/>
+      <!-- check mark -->
+      <text x="640" y="80" fill="#34d399" font-size="22">✓</text>
+
+      <!-- Aliasing -->
+      <text x="350" y="185" text-anchor="middle" fill="#fb7185" font-size="14" font-weight="700">Undersampling (f_s &lt; 2W) — Aliasing!</text>
+      <line x1="40" y1="280" x2="660" y2="280" stroke="#334155" stroke-width="1"/>
+      <text x="350" y="296" text-anchor="middle" fill="#64748b" font-size="11">f</text>
+      <!-- Original -->
+      <polygon points="220,280 350,200 480,280" fill="rgba(99,102,241,.25)" stroke="#6366f1" stroke-width="2"/>
+      <!-- Overlapping copies -->
+      <polygon points="80,280 210,210 340,280" fill="rgba(251,113,133,.15)" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4"/>
+      <polygon points="360,280 490,210 620,280" fill="rgba(251,113,133,.15)" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="4"/>
+      <!-- Overlap zone -->
+      <rect x="220" y="230" width="120" height="50" fill="rgba(251,113,133,.12)" rx="4"/>
+      <text x="280" y="260" text-anchor="middle" fill="#fb7185" font-size="10" font-weight="600">OVERLAP</text>
+      <rect x="360" y="230" width="120" height="50" fill="rgba(251,113,133,.12)" rx="4"/>
+      <text x="420" y="260" text-anchor="middle" fill="#fb7185" font-size="10" font-weight="600">OVERLAP</text>
+      <!-- X mark -->
+      <text x="640" y="250" fill="#fb7185" font-size="22">✗</text>
+    </svg>
+  </div>
+
+  <div class="card warning">
+    <div class="card-label">Aliasing — Why it's dangerous</div>
+    <p>When you sample below the Nyquist rate, high-frequency components "fold back" and masquerade as lower frequencies. This <strong>cannot be undone</strong> — the distortion is permanent. This is called <strong>aliasing distortion</strong>.</p>
+    <p style="margin-top:8px"><strong>Prevention:</strong> Always use an <strong>anti-aliasing filter</strong> (a lowpass filter with cutoff at \(W\)) <em>before</em> the sampler.</p>
+  </div>
+</div>
+
+<!-- ─── Guard Band ─── -->
+<div class="section" id="guard-band">
+  <h3>Guard Band & Practical Sampling</h3>
+
+  <p>In real systems, we sample at a rate <em>higher</em> than the Nyquist rate. The extra "breathing room" between adjacent spectral copies is called the <strong>guard band</strong> \(W_G\):</p>
+
+  <div class="equation-box">
+    \[ f_s = 2W + W_G \]
+  </div>
+
+  <div class="card tip">
+    <div class="card-label">Why do we need a guard band?</div>
+    <p>An ideal "brick-wall" lowpass filter is physically impossible. A guard band gives the reconstruction filter a <strong>gradual transition zone</strong> to roll off, making it <em>realizable</em> with real hardware. The wider the guard band, the easier the filter design — but the higher the sampling rate (and thus the data rate).</p>
+  </div>
+</div>
+
+<!-- ─── Sampling Examples ─── -->
+<div class="section" id="sampling-examples">
+  <h3>Worked Examples — Sampling</h3>
+
+  <div class="card example">
+    <div class="card-label">Example — Guard Band Calculation</div>
+    <p><strong>Problem:</strong> A bandlimited signal has bandwidth \(W = 3400\) Hz. What sampling rate guarantees a guard band of 1200 Hz?</p>
+    <div class="equation-box">
+      \[ f_s = 2W + W_G = 2(3400) + 1200 = \boxed{8000 \text{ Hz}} \]
+    </div>
+    <p style="margin-top:8px;color:var(--text-dim)">This is exactly the sampling rate used for telephone-quality speech (8 kHz), where the audio bandwidth is 300–3400 Hz.</p>
+  </div>
+
+  <div class="card example">
+    <div class="card-label">Example — Offset Sampling</div>
+    <p><strong>Problem:</strong> If sampling starts at \(t_0\) instead of 0 (i.e., samples at \(t_0, t_0 + T_s, t_0 + 2T_s, \ldots\)), can we still reconstruct?</p>
+    <p><strong>Solution:</strong> Yes! Define \(y(t) = x(t + t_0)\). Then \(y(t)\) has the same bandwidth, so sampling \(y\) at \(\{kT_s\}\) is equivalent to sampling \(x\) at \(\{t_0 + kT_s\}\). The reconstruction formula still works — the starting offset doesn't matter as long as the sampling <em>rate</em> satisfies the Nyquist condition.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--              PART II — QUANTIZATION                            -->
+<!-- ============================================================ -->
+<div class="section" id="quant-intro">
+  <div class="section-number">Part II — Quantization</div>
+  <h2>What is Quantization?</h2>
+
+  <p>After sampling, each sample is a real number with potentially infinite decimal places. <strong>Quantization</strong> maps each sample to one of \(N\) finite levels.</p>
+
+  <div class="flow">
+    <div class="flow-block">\(x(nT_s)\)<div class="flow-label">Continuous amplitude</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block" style="border-color:var(--green)">Quantizer \(Q(\cdot)\)<div class="flow-label">\(N\) levels</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block">\(\hat{x}\)<div class="flow-label">Discrete amplitude</div></div>
+  </div>
+
+  <ul>
+    <li>The real number line \(\mathbb{R}\) is partitioned into \(N\) disjoint <strong>quantization regions</strong> \(\mathcal{R}_1, \mathcal{R}_2, \ldots, \mathcal{R}_N\)</li>
+    <li>If sample \(x_i \in \mathcal{R}_k\), it is replaced by the <strong>quantization level</strong> (representative value) \(\hat{x}_k\)</li>
+    <li>Number of bits per sample: \(v = \log_2 N\)</li>
+  </ul>
+
+  <div class="card confusion">
+    <div class="card-label">Common confusion</div>
+    <p><strong>"Region" vs "Level":</strong> A <em>region</em> is a range of input values (e.g., \([a_1, a_2)\)). A <em>level</em> is the single output value that represents the entire region (e.g., \(\hat{x}_2\)). There are \(N\) regions and \(N\) levels. The boundaries between regions are \(a_1, a_2, \ldots, a_{N-1}\) (that's \(N-1\) boundaries).</p>
+  </div>
+</div>
+
+<!-- ─── Scalar Quantization ─── -->
+<div class="section" id="scalar-quant">
+  <h3>Scalar Quantization</h3>
+
+  <p>In <strong>scalar quantization</strong>, each sample is quantized individually (as opposed to vector quantization, which processes blocks of samples together).</p>
+
+  <h4>8-Level Quantizer Example</h4>
+  <p>Consider 8 levels (\(N = 8\), so \(v = \log_2 8 = 3\) bits per sample):</p>
+
+  <table class="comp-table">
+    <tr><th>Region \(\mathcal{R}_k\)</th><th>Range</th><th>Level \(\hat{x}_k\)</th></tr>
+    <tr><td>\(\mathcal{R}_1\)</td><td>\((-\infty, a_1)\)</td><td>\(\hat{x}_1\)</td></tr>
+    <tr><td>\(\mathcal{R}_2\)</td><td>\([a_1, a_2)\)</td><td>\(\hat{x}_2\)</td></tr>
+    <tr><td>\(\mathcal{R}_3\)</td><td>\([a_2, a_3)\)</td><td>\(\hat{x}_3\)</td></tr>
+    <tr><td>⋮</td><td>⋮</td><td>⋮</td></tr>
+    <tr><td>\(\mathcal{R}_8\)</td><td>\([a_7, +\infty)\)</td><td>\(\hat{x}_8\)</td></tr>
+  </table>
+  <p style="color:var(--text-dim);font-size:13px">Notice: \(\mathcal{R}_1\) and \(\mathcal{R}_N\) extend to \(-\infty\) and \(+\infty\), respectively. These "outer" regions handle extreme input values.</p>
+</div>
+
+<!-- ─── Distortion & SQNR ─── -->
+<div class="section" id="distortion">
+  <h3>Distortion & Signal-to-Quantization Noise Ratio</h3>
+
+  <h4>Quantization Error</h4>
+  <p>The error introduced by quantization is:</p>
+  <div class="equation-box">
+    \[ \tilde{x} = x - Q(x) = x - \hat{x} \]
+  </div>
+
+  <h4>Mean Squared Error (MSE) Distortion</h4>
+  <p>Since the input \(X\) is a random variable, the average distortion is:</p>
+  <div class="equation-box">
+    \[ D = E\!\left[(X - Q(X))^2\right] = \int_{-\infty}^{\infty} (x - Q(x))^2 \, f_X(x)\,dx = \sum_{i=1}^{N} \int_{\mathcal{R}_i} (x - \hat{x}_i)^2 \, f_X(x)\,dx \]
+  </div>
+
+  <h4>SQNR (Signal-to-Quantization Noise Ratio)</h4>
+  <div class="equation-box">
+    \[ \text{SQNR} = \frac{E[X^2]}{E[(X - Q(X))^2]} = \frac{P_X}{D} \]
+  </div>
+
+  <div class="card tip">
+    <div class="card-label">Think of it this way</div>
+    <p>SQNR tells you how much "useful signal" you have relative to the "rounding error." Higher SQNR → better quality. It's measured in dB: \(\text{SQNR}_{\text{dB}} = 10\log_{10}(\text{SQNR})\).</p>
+  </div>
+</div>
+
+<!-- ─── Uniform Quantizer ─── -->
+<div class="section" id="uniform-quant">
+  <h3>Uniform Quantizer</h3>
+
+  <p>In a <strong>uniform quantizer</strong>, all interior regions have <strong>equal width</strong> \(\Delta\):</p>
+  <div class="equation-box">
+    \[ a_{i+1} - a_i = \Delta \quad \text{for } 1 \leq i \leq N-2 \]
+  </div>
+  <p>The quantization levels are placed at the <strong>midpoints</strong> of their regions, at distance \(\Delta/2\) from the boundaries.</p>
+
+  <h4>Designing the Optimal Uniform Quantizer</h4>
+  <p>The goal is to choose \(a_1\) and \(\Delta\) to minimize the MSE distortion \(D\). This is done <strong>numerically</strong> — there's no simple closed-form for most distributions. Tables of optimal values are provided for common distributions (e.g., zero-mean unit-variance Gaussian).</p>
+
+  <div class="card confusion">
+    <div class="card-label">Students often ask</div>
+    <p><strong>"How do I use the table?"</strong> — The tables give \(\Delta\) and \(D\) for a <strong>zero-mean, unit-variance</strong> Gaussian source. For a source with mean \(m\) and variance \(\sigma^2\):</p>
+    <ul>
+      <li>Scale step size: \(\Delta_{\text{actual}} = \sigma \times \Delta_{\text{table}}\)</li>
+      <li>Scale levels: \(\hat{x}_{i,\text{actual}} = m + \sigma \times \hat{x}_{i,\text{table}}\)</li>
+      <li>Scale distortion: \(D_{\text{actual}} = \sigma^2 \times D_{\text{table}}\)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ─── Nonuniform Quantizer ─── -->
+<div class="section" id="nonuniform-quant">
+  <h3>Nonuniform Quantizer (Lloyd-Max)</h3>
+
+  <p>If we <strong>don't</strong> require equal-width regions, we have more freedom to minimize distortion. The result is a <strong>nonuniform quantizer</strong> that always performs ≥ as well as the uniform case.</p>
+
+  <h4>Lloyd-Max Conditions</h4>
+  <p>The optimal nonuniform quantizer must satisfy two conditions simultaneously:</p>
+
+  <div class="card definition">
+    <div class="card-label">Condition 1 — Nearest Neighbor Rule</div>
+    <p>Each boundary is the midpoint of its neighboring quantization levels:</p>
+    <div class="equation-box">
+      \[ a_i = \frac{1}{2}(\hat{x}_i + \hat{x}_{i+1}) \]
+    </div>
+    <p style="margin-top:8px">This means: assign every input value to the <em>nearest</em> quantization level.</p>
+  </div>
+
+  <div class="card definition" style="margin-top:16px">
+    <div class="card-label">Condition 2 — Centroid Rule</div>
+    <p>Each quantization level is the <strong>centroid</strong> (conditional mean) of its region:</p>
+    <div class="equation-box">
+      \[ \hat{x}_i = \frac{\displaystyle\int_{a_{i-1}}^{a_i} x\,f_X(x)\,dx}{\displaystyle\int_{a_{i-1}}^{a_i} f_X(x)\,dx} \]
+    </div>
+    <p style="margin-top:8px">This means: place each level at the "center of mass" of the probability distribution within that region.</p>
+  </div>
+
+  <h4>Iterative Design (Lloyd-Max Algorithm)</h4>
+  <div class="steps">
+    <div class="step">Start with an initial guess for the quantization regions \(\{\mathcal{R}_i\}\).</div>
+    <div class="step">Compute the optimal levels (centroids) for the current regions using Condition 2.</div>
+    <div class="step">Update the region boundaries using the new levels via Condition 1.</div>
+    <div class="step">Repeat Steps 2–3 until the distortion \(D\) converges (stops changing significantly).</div>
+  </div>
+
+  <div class="card tip">
+    <div class="card-label">Why is nonuniform better?</div>
+    <p>A nonuniform quantizer puts <strong>more levels where the signal is most likely to be</strong> and fewer levels where the signal rarely goes. For a Gaussian signal (which hovers near zero most of the time), this means packing levels tightly near zero and spreading them out in the tails.</p>
+  </div>
+</div>
+
+<!-- ─── Quantization Examples ─── -->
+<div class="section" id="quant-examples">
+  <h3>Worked Examples — Quantization</h3>
+
+  <div class="card example">
+    <div class="card-label">Example — Rate & Distortion (Gaussian Source)</div>
+    <p><strong>Given:</strong> A stationary Gaussian source with \(\mu = 0\), PSD \(S_X(f) = 2\) for \(|f| < 100\) Hz (else 0). Sampled at Nyquist rate, 8-level quantizer.</p>
+    <p><strong>Solution:</strong></p>
+    <ul>
+      <li>Bandwidth: \(W = 100\) Hz → Nyquist sampling rate: \(f_s = 200\) Hz</li>
+      <li>Variance: \(\sigma^2 = \int_{-100}^{100} 2\,df = 400\)</li>
+      <li>Bits per sample: \(v = \log_2 8 = 3\)</li>
+      <li>Bit rate: \(R = v \cdot f_s = 3 \times 200 = 600\) bps</li>
+      <li>Distortion: computed numerically ≈ 33.38 → SQNR = 400/33.38 = 11.98 ≈ <strong>10.78 dB</strong></li>
+    </ul>
+  </div>
+
+  <div class="card example" style="margin-top:16px">
+    <div class="card-label">Example — Uniform vs Nonuniform Comparison</div>
+    <p>For the same source (\(\sigma^2 = 400\), \(N = 8\)):</p>
+    <table class="comp-table">
+      <tr><th>Quantizer Type</th><th>Distortion \(D\)</th><th>SQNR (dB)</th></tr>
+      <tr><td>Ad-hoc (Example 4)</td><td>33.38</td><td>10.78</td></tr>
+      <tr><td>Optimal Uniform (Table)</td><td>\(\sigma^2 \times 0.03744 = 14.98\)</td><td>14.27</td></tr>
+      <tr><td>Optimal Nonuniform (Lloyd-Max)</td><td>\(\sigma^2 \times 0.03454 = 13.82\)</td><td>14.62</td></tr>
+    </table>
+    <p style="margin-top:10px;color:var(--green)">✓ The nonuniform quantizer always wins — lower distortion for the same number of levels.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--              PART III — ENCODING                               -->
+<!-- ============================================================ -->
+<div class="section" id="encoding">
+  <div class="section-number">Part III — Encoding</div>
+  <h2>Encoding — Bits to Levels</h2>
+
+  <p>After quantization, each level \(\hat{x}_k\) must be assigned a unique binary codeword. With \(N = 2^v\) levels, we need \(v\) bits per sample.</p>
+
+  <div class="equation-box">
+    \[ R = v \cdot f_s \quad \text{bits/sec} \]
+  </div>
+
+  <h4>Two Common Encoding Schemes</h4>
+
+  <table class="comp-table">
+    <tr><th>Level</th><th>Natural Binary (NBC)</th><th>Gray Code</th></tr>
+    <tr><td>\(\hat{x}_1\) (lowest)</td><td><code>000</code></td><td><code>000</code></td></tr>
+    <tr><td>\(\hat{x}_2\)</td><td><code>001</code></td><td><code>001</code></td></tr>
+    <tr><td>\(\hat{x}_3\)</td><td><code>010</code></td><td><code>011</code></td></tr>
+    <tr><td>\(\hat{x}_4\)</td><td><code>011</code></td><td><code>010</code></td></tr>
+    <tr><td>\(\hat{x}_5\)</td><td><code>100</code></td><td><code>110</code></td></tr>
+    <tr><td>\(\hat{x}_6\)</td><td><code>101</code></td><td><code>111</code></td></tr>
+    <tr><td>\(\hat{x}_7\)</td><td><code>110</code></td><td><code>101</code></td></tr>
+    <tr><td>\(\hat{x}_8\) (highest)</td><td><code>111</code></td><td><code>100</code></td></tr>
+  </table>
+
+  <div class="card tip">
+    <div class="card-label">Why Gray Code?</div>
+    <p>In Gray code, <strong>adjacent levels differ by exactly one bit</strong>. If a transmission error causes a single bit flip, the receiver decodes to a <em>neighboring</em> level — a small error. With natural binary, a single-bit error can cause a large jump (e.g., <code>011</code> → <code>111</code> changes level 4 to level 8). Gray code is <strong>more robust</strong> against channel errors.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--       PART IV — WAVEFORM ENCODING                              -->
+<!-- ============================================================ -->
+<div class="section" id="pcm">
+  <div class="section-number">Part IV — Waveform Encoding</div>
+  <h2>Pulse Code Modulation (PCM)</h2>
+
+  <p><strong>PCM</strong> is the most fundamental waveform coding method. It's simply the full pipeline: <strong>Sample → Quantize → Encode</strong>.</p>
+
+  <div class="flow">
+    <div class="flow-block">Anti-aliasing<br>Filter<div class="flow-label">BW = W</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block">Sampler<div class="flow-label">\(f_s \geq 2W\)</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block">Quantizer<div class="flow-label">\(N = 2^v\) levels</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block">Encoder<div class="flow-label">\(v\) bits/sample</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block" style="border-color:var(--green)">Binary<br>Output<div class="flow-label">\(R = vf_s\) bps</div></div>
+  </div>
+
+  <h4>Assumptions for Uniform PCM</h4>
+  <ul>
+    <li>Signal is bandlimited to \(W\) Hz</li>
+    <li>Amplitude is bounded: \(|x(t)| \leq x_{\max}\) for all \(t\)</li>
+    <li>Number of quantization levels \(N = 2^v\) is large</li>
+    <li>Uniform quantizer is used</li>
+  </ul>
+
+  <div class="card definition">
+    <div class="card-label">Step Size for Uniform PCM</div>
+    <p>Since the input range is \([-x_{\max}, +x_{\max}]\) and there are \(N\) levels:</p>
+    <div class="equation-box">
+      \[ \Delta = \frac{2x_{\max}}{N} = \frac{x_{\max}}{2^{v-1}} \]
+    </div>
+  </div>
+</div>
+
+<!-- ─── PCM SQNR ─── -->
+<div class="section" id="pcm-sqnr">
+  <h3>PCM: SQNR & Bandwidth</h3>
+
+  <h4>Quantization Noise in Uniform PCM</h4>
+  <p>When \(N\) is large, the quantization error is approximately uniformly distributed on \((-\Delta/2, \Delta/2]\):</p>
+  <div class="equation-box">
+    \[ E[\tilde{X}^2] = \frac{\Delta^2}{12} = \frac{x_{\max}^2}{3N^2} = \frac{x_{\max}^2}{3 \cdot 4^v} \]
+  </div>
+
+  <h4>SQNR Formula — The "6 dB per bit" Rule</h4>
+  <div class="equation-box" style="background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(34,211,238,.1));border-color:var(--accent)">
+    \[ \text{SQNR} = \frac{3 \cdot 4^v \cdot P_X}{x_{\max}^2} \]
+  </div>
+  <div class="equation-box" style="margin-top:8px">
+    \[ \text{SQNR}_{\text{dB}} \approx 10\log_{10}\!\left(\frac{P_X}{x_{\max}^2}\right) + 6v + 4.8 \]
+  </div>
+
+  <div class="card warning">
+    <div class="card-label">The famous 6 dB per bit rule</div>
+    <p>Every additional bit of quantization (\(v \to v+1\)) improves the SQNR by <strong>approximately 6 dB</strong>. This is because doubling the number of levels halves the step size, quartering the noise power.</p>
+    <p style="margin-top:8px">Conversely, to <strong>improve SQNR by 25 dB</strong>, you need \(\lceil 25/6 \rceil = 5\) extra bits.</p>
+  </div>
+
+  <div class="card confusion">
+    <div class="card-label">Common confusion</div>
+    <p><strong>"What is \(P_X / x_{\max}^2\)?"</strong> — This ratio measures how "spread out" the signal is relative to its peak. For a uniformly distributed signal on \([-1, 1]\), \(P_X = 1/3\) and \(x_{\max} = 1\), so the ratio is 1/3. For signals that rarely hit their peak (like speech, which has a high peak-to-average ratio), this ratio is much less than 1, and the SQNR suffers.</p>
+  </div>
+
+  <h4>Bandwidth Requirement</h4>
+  <p>Each sample produces \(v\) bits, at a rate of \(f_s\) samples/sec:</p>
+  <div class="equation-box">
+    \[ R = v \cdot f_s \text{ bps} \qquad \text{BW}_{\text{req}} = \frac{R}{2} = \frac{v \cdot f_s}{2} \]
+  </div>
+  <p>At the Nyquist rate (\(f_s = 2W\)): \(\text{BW}_{\text{req}} = vW\). So PCM <em>expands</em> the bandwidth by a factor of \(v\).</p>
+
+  <div class="card example">
+    <div class="card-label">Example — Full PCM Design (Example 10)</div>
+    <p><strong>Given:</strong> Zero-mean WSS process, triangular PSD with bandwidth \(W = 5000\) Hz, \(x_{\max} = 600\), guard band = 2 kHz, \(N = 256\) levels.</p>
+    <ul>
+      <li>\(P_X = \text{area under PSD} = \frac{1}{2}(10000)(1) = 5000\) W</li>
+      <li>\(f_s = 2(5000) + 2000 = 12{,}000\) Hz</li>
+      <li>\(v = \log_2 256 = 8\) bits</li>
+      <li>SQNR\(_{\text{dB}} = 10\log_{10}(5000/600^2) + 6(8) + 4.8 = \boxed{34.2 \text{ dB}}\)</li>
+      <li>Bit rate: \(R = 8 \times 12000 = 96{,}000\) bps</li>
+      <li>Bandwidth: \(\text{BW}_T = R/2 = 48\) kHz</li>
+    </ul>
+    <p style="margin-top:8px"><strong>To increase SQNR by 25 dB:</strong> Need 5 more bits → \(v = 13\), \(N = 8192\), new SQNR = 64.2 dB, new BW = \(13 \times 12000/2 = 78\) kHz.</p>
+  </div>
+</div>
+
+<!-- ─── Nonuniform PCM ─── -->
+<div class="section" id="nonuniform-pcm">
+  <h3>Nonuniform PCM & Companding</h3>
+
+  <p>Uniform PCM works well for uniformly distributed signals, but <strong>speech</strong> has a Gaussian-like distribution — small amplitudes are much more likely than large ones. Uniform quantization "wastes" levels on the rarely-used large-amplitude regions.</p>
+
+  <h4>Solution: Companding</h4>
+  <div class="flow">
+    <div class="flow-block">Input \(x\)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block" style="border-color:var(--amber)">Compressor<br>\(g(x)\)<div class="flow-label">Squeeze large values</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block" style="border-color:var(--green)">Uniform<br>Quantizer</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block">Channel</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block" style="border-color:var(--amber)">Expander<br>\(g^{-1}(x)\)<div class="flow-label">Restore amplitudes</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block">Output</div>
+  </div>
+
+  <p style="margin-top:16px">The compressor <strong>compresses</strong> the dynamic range (makes large values smaller), then a uniform quantizer is applied. At the receiver, the expander reverses the compression. The combined effect is equivalent to nonuniform quantization.</p>
+
+  <h4>Two Standard Compander Laws</h4>
+
+  <table class="comp-table">
+    <tr><th>Law</th><th>Formula</th><th>Used In</th></tr>
+    <tr>
+      <td><span class="tag amber">μ-law</span></td>
+      <td>\(\displaystyle g(x) = \frac{\ln(1 + \mu|x|)}{\ln(1 + \mu)} \cdot \text{sgn}(x)\)</td>
+      <td>North America, Japan (\(\mu = 255\))</td>
+    </tr>
+    <tr>
+      <td><span class="tag cyan">A-law</span></td>
+      <td>\(\displaystyle g(x) = \frac{1 + \ln(A|x|)}{1 + \ln A} \cdot \text{sgn}(x)\) for \(|x| \geq 1/A\)</td>
+      <td>Europe (\(A = 87.6\))</td>
+    </tr>
+  </table>
+
+  <div class="card tip">
+    <div class="card-label">The idea in one sentence</div>
+    <p>Compress before quantizing → more effective levels near zero (where most speech energy lives) → better SQNR for speech signals without increasing the bit rate.</p>
+  </div>
+</div>
+
+<!-- ─── DPCM ─── -->
+<div class="section" id="dpcm">
+  <h3>Differential PCM (DPCM)</h3>
+
+  <p>Instead of quantizing each sample independently, DPCM quantizes the <strong>difference</strong> between consecutive samples.</p>
+
+  <div class="card definition">
+    <div class="card-label">Key Idea</div>
+    <p>Adjacent samples of most real signals are <strong>highly correlated</strong> — the difference \(Y_n = X_n - \hat{Y}'_{n-1}\) has a much smaller dynamic range than \(X_n\) itself. Therefore, fewer quantization levels (fewer bits) are needed.</p>
+  </div>
+
+  <div class="flow">
+    <div class="flow-block">\(X_n\)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block" style="border-color:var(--rose)">− (subtract<br>prediction)<div class="flow-label">\(Y_n = X_n - \hat{Y}'_{n-1}\)</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block" style="border-color:var(--green)">Quantizer<div class="flow-label">\(\hat{Y}_n\)</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-block">Transmit</div>
+  </div>
+
+  <p style="margin-top:16px">The prediction \(\hat{Y}'_{n-1}\) is formed from previously quantized values (available at both transmitter and receiver), preventing accumulation of quantization noise.</p>
+
+  <div class="card tip">
+    <div class="card-label">Why not just use \(X_{n-1}\)?</div>
+    <p>Because the receiver only has access to the <em>quantized</em> version. If the transmitter subtracts the original \(X_{n-1}\) but the receiver adds back \(\hat{X}_{n-1}\), the mismatch causes errors to <strong>accumulate</strong>. DPCM avoids this by using the quantized prediction at both ends.</p>
+  </div>
+</div>
+
+<!-- ─── DM ─── -->
+<div class="section" id="dm">
+  <h3>Delta Modulation (DM)</h3>
+
+  <p>Delta Modulation is a <strong>simplified DPCM</strong> where the quantizer has only <strong>2 levels: \(+\Delta\) and \(-\Delta\)</strong> (1 bit per sample).</p>
+
+  <div class="card definition">
+    <div class="card-label">How DM Works</div>
+    <p>At each sample, DM decides: <strong>"Is the signal going up or down?"</strong></p>
+    <ul>
+      <li>If the difference is positive → transmit \(+\Delta\) (one step up)</li>
+      <li>If the difference is negative → transmit \(-\Delta\) (one step down)</li>
+    </ul>
+    <p style="margin-top:8px">The reconstructed signal is a staircase that tries to follow the original.</p>
+  </div>
+
+  <div class="card warning">
+    <div class="card-label">The Step-Size Dilemma</div>
+    <p>The choice of \(\Delta\) involves a critical tradeoff:</p>
+  </div>
+
+  <table class="comp-table">
+    <tr><th>Step Size</th><th>Advantage</th><th>Problem</th></tr>
+    <tr>
+      <td><strong>Large \(\Delta\)</strong></td>
+      <td>Can follow rapid signal changes</td>
+      <td><span class="tag rose">Granular noise</span> — When signal changes slowly, output oscillates around the true value with big steps</td>
+    </tr>
+    <tr>
+      <td><strong>Small \(\Delta\)</strong></td>
+      <td>Low granular noise for slow signals</td>
+      <td><span class="tag amber">Slope overload</span> — When signal changes rapidly, staircase can't keep up and falls behind</td>
+    </tr>
+  </table>
+
+  <div class="card confusion">
+    <div class="card-label">When does slope overload happen?</div>
+    <p>Slope overload occurs when the maximum slope of the DM staircase (\(\Delta/T_s = \Delta \cdot f_s\)) is less than the maximum slope of the input signal. To combat this, DM must sample at rates <strong>much higher than the Nyquist rate</strong> — this is the price of using only 1 bit per sample.</p>
+  </div>
+
+  <p><strong>Major advantage of DM:</strong> <span class="tag green">Very simple hardware</span> — only a 1-bit quantizer and a simple accumulator.</p>
+</div>
+
+<!-- ─── ADM ─── -->
+<div class="section" id="adm">
+  <h3>Adaptive Delta Modulation (ADM)</h3>
+
+  <p>ADM solves the fixed step-size dilemma by <strong>adapting \(\Delta\) on the fly</strong>:</p>
+
+  <div class="card definition">
+    <div class="card-label">Adaptation Rule</div>
+    <div class="equation-box">
+      \[ \Delta_n = \Delta_{n-1} \cdot K^{\epsilon_n \cdot \epsilon_{n-1}} \]
+    </div>
+    <p>where \(\epsilon_n \in \{+1, -1\}\) is the quantizer output (before scaling), and \(K > 1\) is a constant.</p>
+    <ul style="margin-top:10px">
+      <li><strong>Same sign</strong> (\(\epsilon_n \cdot \epsilon_{n-1} = +1\)): multiply by \(K\) → <span class="tag amber">increase step size</span> (signal is changing fast)</li>
+      <li><strong>Opposite sign</strong> (\(\epsilon_n \cdot \epsilon_{n-1} = -1\)): multiply by \(1/K\) → <span class="tag green">decrease step size</span> (signal is oscillating, probably near the true value)</li>
+    </ul>
+  </div>
+
+  <div class="card tip">
+    <div class="card-label">Why this works intuitively</div>
+    <p>Two consecutive "up" steps (same sign) suggest the signal is rising fast and we need to take bigger steps to keep up. Alternating up-down steps (opposite signs) suggest we're oscillating around the true value — we should take smaller steps for finer tracking.</p>
+  </div>
+</div>
+
+<!-- ─── PCM Worked Examples ─── -->
+<div class="section" id="pcm-examples">
+  <h3>Worked Examples — PCM & Waveform Encoding</h3>
+
+  <div class="card example">
+    <div class="card-label">Example — Uniform Signal, 256-Level PCM</div>
+    <p><strong>Given:</strong> Signal uniformly distributed on \([-1, 1]\), \(N = 256\).</p>
+    <ul>
+      <li>\(P_X = \int_{-1}^{1} \frac{1}{2} x^2\,dx = \frac{1}{3}\)</li>
+      <li>\(x_{\max} = 1\), \(v = 8\)</li>
+      <li>SQNR \(= 3 \times 4^8 \times (1/3) = 4^8 = 65{,}536 \approx 48\) dB</li>
+    </ul>
+    <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Note: For a uniform distribution, the SQNR formula simplifies beautifully because \(3P_X/x_{\max}^2 = 1\).</p>
+  </div>
+
+  <div class="card example" style="margin-top:16px">
+    <div class="card-label">Example — Achieving a Target SQNR</div>
+    <p><strong>Given:</strong> Current SQNR = 34.2 dB with 8 bits. Need to increase by at least 25 dB.</p>
+    <p><strong>Solution:</strong> Each extra bit gives ~6 dB. Need \(\lceil 25/6 \rceil = 5\) extra bits → \(v = 13\), \(N = 2^{13} = 8192\).</p>
+    <p>New SQNR = 34.2 + 30 = <strong>64.2 dB</strong>.</p>
+    <p style="color:var(--text-dim)">Trade-off: bandwidth increases from 48 kHz to 78 kHz.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--                  COMPARISON TABLE                              -->
+<!-- ============================================================ -->
+<div class="section" id="summary">
+  <div class="section-number">Summary</div>
+  <h2>Chapter Summary & Comparison</h2>
+
+  <h3>Waveform Encoding Methods at a Glance</h3>
+  <table class="comp-table">
+    <tr>
+      <th>Method</th>
+      <th>What's Quantized</th>
+      <th>Bits/Sample</th>
+      <th>Pros</th>
+      <th>Cons</th>
+    </tr>
+    <tr>
+      <td><strong>PCM</strong></td>
+      <td>Each sample directly</td>
+      <td>\(v = \log_2 N\)</td>
+      <td>Simple, robust, standard</td>
+      <td>High bit rate</td>
+    </tr>
+    <tr>
+      <td><strong>DPCM</strong></td>
+      <td>Difference from prediction</td>
+      <td>Fewer than PCM</td>
+      <td>Lower bit rate (exploits correlation)</td>
+      <td>More complex; needs predictor</td>
+    </tr>
+    <tr>
+      <td><strong>DM</strong></td>
+      <td>Sign of difference</td>
+      <td>1</td>
+      <td>Very simple hardware</td>
+      <td>Granular noise / slope overload; needs oversampling</td>
+    </tr>
+    <tr>
+      <td><strong>ADM</strong></td>
+      <td>Sign (adaptive step)</td>
+      <td>1</td>
+      <td>Adapts to signal dynamics</td>
+      <td>More complex than DM</td>
+    </tr>
+  </table>
+
+  <h3 style="margin-top:48px">Key Formulas Cheat Sheet</h3>
+  <div class="card" style="background:linear-gradient(135deg,rgba(99,102,241,.05),rgba(34,211,238,.05))">
+    <table class="comp-table">
+      <tr><th>Concept</th><th>Formula</th></tr>
+      <tr><td>Nyquist Sampling Rate</td><td>\(f_s = 2W\)</td></tr>
+      <tr><td>Sampling with Guard Band</td><td>\(f_s = 2W + W_G\)</td></tr>
+      <tr><td>Reconstruction (Nyquist)</td><td>\(x(t) = \sum_n x(nT_s)\,\text{sinc}(t/T_s - n)\)</td></tr>
+      <tr><td>Bits per sample</td><td>\(v = \log_2 N\)</td></tr>
+      <tr><td>Bit rate</td><td>\(R = v \cdot f_s\)</td></tr>
+      <tr><td>Uniform PCM step size</td><td>\(\Delta = 2x_{\max}/N\)</td></tr>
+      <tr><td>Quantization noise (uniform)</td><td>\(E[\tilde{X}^2] = \Delta^2/12\)</td></tr>
+      <tr><td>SQNR (uniform PCM)</td><td>\(\text{SQNR} = 3 \cdot 4^v \cdot P_X / x_{\max}^2\)</td></tr>
+      <tr><td>SQNR in dB</td><td>\(\approx 10\log_{10}(P_X/x_{\max}^2) + 6v + 4.8\)</td></tr>
+      <tr><td>6 dB per bit rule</td><td>+1 bit → +6 dB SQNR</td></tr>
+      <tr><td>Min BW for PCM</td><td>\(\text{BW} = R/2 = vf_s/2\)</td></tr>
+      <tr><td>Lloyd-Max boundary</td><td>\(a_i = (\hat{x}_i + \hat{x}_{i+1})/2\)</td></tr>
+      <tr><td>Lloyd-Max centroid</td><td>\(\hat{x}_i = E[X \mid X \in \mathcal{R}_i]\)</td></tr>
+      <tr><td>ADM step adaptation</td><td>\(\Delta_n = \Delta_{n-1} \cdot K^{\epsilon_n \epsilon_{n-1}}\)</td></tr>
+    </table>
+  </div>
+
+  <h3 style="margin-top:48px">The Big Picture</h3>
+  <div class="card" style="text-align:center;padding:36px">
+    <div class="flow" style="flex-direction:column;gap:0">
+      <div class="flow" style="margin:0">
+        <div class="flow-block" style="min-width:140px">Analog Source<div class="flow-label">Continuous everywhere</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-block" style="border-color:var(--cyan);min-width:140px">Anti-alias Filter + Sampler<div class="flow-label">Continuous → Discrete-time</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-block" style="border-color:var(--green);min-width:140px">Quantizer<div class="flow-label">∞ values → N levels</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-block" style="border-color:var(--amber);min-width:140px">Encoder<div class="flow-label">Levels → Binary</div></div>
+      </div>
+      <div style="font-size:36px;color:var(--accent2);margin:12px 0">⬇</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text-bright)">Digital Bit Stream — Ready for Digital Transmission!</div>
+    </div>
+  </div>
+
+  <div class="card tip" style="margin-top:28px">
+    <div class="card-label">Final Study Tips</div>
+    <ul>
+      <li><strong>Understand the concepts</strong> before memorizing formulas — know <em>why</em> each step exists</li>
+      <li><strong>Practice scaling</strong> — learn to convert table values (unit-variance) to actual source parameters</li>
+      <li><strong>Remember the 6 dB rule</strong> — it's used in many exam questions</li>
+      <li><strong>Draw the spectral replicas</strong> when thinking about aliasing — visualization helps enormously</li>
+      <li><strong>Know the tradeoffs</strong> — PCM vs DPCM vs DM: each trades complexity for bit rate</li>
+    </ul>
+  </div>
+</div>
+
+</div> <!-- /main -->
+
+<!-- ═══════ Keyboard Navigation Hint ═══════ -->
+<div class="nav-hint">
+  <span>Scroll to navigate</span>
+  <span>|</span>
+  <span><kbd>◀</kbd> Toggle sidebar</span>
+</div>
+
+<script>
+// ─── Sidebar toggle ───
+const sidebar = document.getElementById('sidebar');
+const toggle = document.getElementById('sidebarToggle');
+const main = document.getElementById('mainContent');
+toggle.addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed');
+  main.classList.toggle('expanded');
+  toggle.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+});
+
+// ─── Progress bar ───
+const progressFill = document.getElementById('progressFill');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  progressFill.style.width = pct + '%';
+});
+
+// ─── Active TOC highlight ───
+const tocItems = document.querySelectorAll('.toc-item');
+const sections = [];
+tocItems.forEach(item => {
+  const id = item.getAttribute('href')?.replace('#','');
+  if (id) {
+    const el = document.getElementById(id);
+    if (el) sections.push({ el, item });
+  }
+});
+
+function updateTOC() {
+  let current = sections[0];
+  const scrollY = window.scrollY + 120;
+  sections.forEach(s => { if (s.el.offsetTop <= scrollY) current = s; });
+  tocItems.forEach(i => i.classList.remove('active'));
+  if (current) current.item.classList.add('active');
+}
+window.addEventListener('scroll', updateTOC);
+updateTOC();
+
+// ─── Smooth scroll for TOC links ───
+tocItems.forEach(item => {
+  item.addEventListener('click', e => {
+    e.preventDefault();
+    const id = item.getAttribute('href')?.replace('#','');
+    const target = document.getElementById(id);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Mobile: close sidebar
+      if (window.innerWidth <= 900) {
+        sidebar.classList.remove('open');
+      }
+    }
+  });
+});
+
+// ─── Intersection Observer for fade-in ───
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.animationPlayState = 'running';
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.section').forEach(s => {
+  s.style.animationPlayState = 'paused';
+  observer.observe(s);
+});
+</script>
+</body>
+</html>
