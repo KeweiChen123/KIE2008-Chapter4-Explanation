@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 5: Digital Modulation Techniques | KIE2008</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(','\\)']],
+    displayMath: [['\\[','\\]']],
+    processEscapes: true,
+    tags: 'ams'
+  },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
+  startup: { pageReady: () => MathJax.startup.defaultPageReady() }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+<style>
+:root {
+  --bg-primary: #0a0a1a;
+  --bg-secondary: #0f0f2a;
+  --bg-tertiary: #1a1a3e;
+  --glass-bg: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-hover: rgba(255,255,255,0.08);
+  --accent-blue: #00d4ff;
+  --accent-purple: #8b5cf6;
+  --accent-green: #10b981;
+  --accent-pink: #ec4899;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: var(--font-main);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.7;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== ANIMATED BACKGROUND ===== */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(0,212,255,0.08), transparent),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(139,92,246,0.06), transparent),
+    radial-gradient(ellipse 50% 40% at 10% 60%, rgba(16,185,129,0.05), transparent);
+}
+
+.bg-dots {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.3;
+  background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* ===== PROGRESS BAR ===== */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px; z-index: 10000;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+  transition: width 0.15s linear; width: 0;
+  box-shadow: 0 0 12px var(--accent-blue);
+}
+
+/* ===== NAVIGATION ===== */
+.top-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999; height: 60px;
+  background: rgba(10,10,26,0.85);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex; align-items: center; padding: 0 24px;
+  transition: var(--transition);
+}
+.top-nav.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,0.4); }
+.nav-brand { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.5px; }
+.nav-brand span { background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.nav-links { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+.nav-links a {
+  color: var(--text-secondary); text-decoration: none; font-size: 0.78rem; font-weight: 500;
+  padding: 6px 12px; border-radius: 8px; transition: var(--transition); white-space: nowrap;
+}
+.nav-links a:hover { color: var(--accent-blue); background: rgba(0,212,255,0.08); }
+.nav-links a.active { color: var(--accent-blue); background: rgba(0,212,255,0.12); }
+
+.hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; padding: 8px; margin-left: auto; z-index: 10001; }
+.hamburger span { display: block; width: 22px; height: 2px; background: var(--text-primary); transition: var(--transition); border-radius: 2px; }
+
+/* ===== MAIN CONTENT ===== */
+.main-content { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 80px 20px 60px; }
+
+/* ===== HERO ===== */
+.hero {
+  text-align: center; padding: 80px 20px 60px; position: relative;
+  animation: fadeInUp 0.8s ease-out;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.2);
+  padding: 6px 16px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+  color: var(--accent-blue); margin-bottom: 24px; letter-spacing: 1px; text-transform: uppercase;
+}
+.hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.1;
+  letter-spacing: -1.5px; margin-bottom: 16px;
+  background: linear-gradient(135deg, #fff 0%, var(--accent-blue) 50%, var(--accent-purple) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero p { color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto 12px; }
+.hero-meta { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-top: 24px; }
+.hero-meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text-muted); }
+.hero-meta-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ===== GLASS CARD ===== */
+.card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: var(--transition);
+  animation: fadeInUp 0.6s ease-out both;
+}
+.card:hover { border-color: rgba(255,255,255,0.12); background: var(--glass-hover); }
+
+.card-accent-blue { border-left: 3px solid var(--accent-blue); }
+.card-accent-purple { border-left: 3px solid var(--accent-purple); }
+.card-accent-green { border-left: 3px solid var(--accent-green); }
+.card-accent-pink { border-left: 3px solid var(--accent-pink); }
+.card-accent-orange { border-left: 3px solid var(--accent-orange); }
+
+/* ===== SECTION HEADERS ===== */
+.section-header {
+  display: flex; align-items: center; gap: 16px; margin: 60px 0 28px; padding-top: 20px;
+}
+.section-number {
+  display: flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; border-radius: 14px; font-weight: 800; font-size: 1.2rem;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color: #fff; flex-shrink: 0;
+}
+.section-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
+
+.sub-section-title {
+  font-size: 1.3rem; font-weight: 700; margin: 32px 0 16px;
+  padding-left: 16px; border-left: 3px solid var(--accent-blue);
+  color: var(--text-primary);
+}
+
+/* ===== COLLAPSIBLE ===== */
+.collapsible-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; padding: 20px 28px;
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); margin-bottom: 4px;
+  transition: var(--transition); user-select: none;
+}
+.collapsible-header:hover { background: var(--glass-hover); border-color: rgba(255,255,255,0.12); }
+.collapsible-header h3 { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+.collapsible-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;
+  transition: transform 0.3s ease; font-size: 0.9rem; color: var(--text-secondary); flex-shrink: 0;
+}
+.collapsible-header.active .collapsible-icon { transform: rotate(180deg); }
+.collapsible-body {
+  max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+  opacity: 0;
+}
+.collapsible-body.open { max-height: 8000px; opacity: 1; }
+.collapsible-content { padding: 24px 28px; }
+
+/* ===== EQUATIONS ===== */
+.eq-box {
+  background: rgba(0,212,255,0.04); border: 1px solid rgba(0,212,255,0.12);
+  border-radius: var(--radius-sm); padding: 20px 24px; margin: 16px 0;
+  overflow-x: auto;
+}
+.eq-box.important {
+  background: rgba(139,92,246,0.06); border-color: rgba(139,92,246,0.2);
+  box-shadow: 0 0 20px rgba(139,92,246,0.05);
+}
+.eq-label {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--accent-blue); margin-bottom: 8px;
+}
+
+/* ===== TAGS / BADGES ===== */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.tag-blue { background: rgba(0,212,255,0.12); color: var(--accent-blue); }
+.tag-purple { background: rgba(139,92,246,0.12); color: var(--accent-purple); }
+.tag-green { background: rgba(16,185,129,0.12); color: var(--accent-green); }
+.tag-pink { background: rgba(236,72,153,0.12); color: var(--accent-pink); }
+.tag-orange { background: rgba(245,158,11,0.12); color: var(--accent-orange); }
+
+/* ===== INSIGHT BOX ===== */
+.insight-box {
+  background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15);
+  border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0;
+  font-size: 0.92rem;
+}
+.insight-box .insight-title { font-weight: 700; color: var(--accent-green); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+
+.warning-box {
+  background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15);
+  border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0;
+  font-size: 0.92rem;
+}
+.warning-box .warning-title { font-weight: 700; color: var(--accent-orange); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+
+.trap-box {
+  background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15);
+  border-radius: var(--radius-sm); padding: 16px 20px; margin: 16px 0;
+  font-size: 0.92rem;
+}
+.trap-box .trap-title { font-weight: 700; color: var(--accent-red); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+
+/* ===== LISTS ===== */
+.styled-list { list-style: none; padding: 0; }
+.styled-list li {
+  padding: 8px 0 8px 28px; position: relative; color: var(--text-secondary);
+}
+.styled-list li::before {
+  content: ''; position: absolute; left: 8px; top: 16px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-blue);
+}
+
+/* ===== COMPARISON TABLE ===== */
+.table-wrap { overflow-x: auto; margin: 16px 0; border-radius: var(--radius-sm); }
+table {
+  width: 100%; border-collapse: collapse; font-size: 0.88rem;
+}
+th {
+  background: rgba(0,212,255,0.08); color: var(--accent-blue); font-weight: 700;
+  padding: 12px 16px; text-align: left; font-size: 0.78rem;
+  text-transform: uppercase; letter-spacing: 1px;
+  border-bottom: 1px solid var(--glass-border);
+}
+td {
+  padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+}
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ===== INTERACTIVE WIDGETS ===== */
+.widget-container {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 28px; margin: 24px 0;
+  backdrop-filter: blur(12px);
+}
+.widget-title {
+  font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.widget-controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+.widget-btn {
+  padding: 8px 18px; border: 1px solid var(--glass-border); border-radius: 8px;
+  background: var(--glass-bg); color: var(--text-secondary); cursor: pointer;
+  font-family: var(--font-main); font-size: 0.82rem; font-weight: 600;
+  transition: var(--transition);
+}
+.widget-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(0,212,255,0.08); }
+.widget-btn.active { border-color: var(--accent-blue); color: #fff; background: rgba(0,212,255,0.2); box-shadow: 0 0 12px rgba(0,212,255,0.15); }
+.widget-canvas-wrap { position: relative; border-radius: var(--radius-sm); overflow: hidden; background: rgba(0,0,0,0.3); }
+canvas { display: block; width: 100%; }
+
+.slider-group { display: flex; align-items: center; gap: 12px; }
+.slider-group label { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+.slider-group input[type=range] {
+  -webkit-appearance: none; height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.1); outline: none; flex: 1; min-width: 100px;
+}
+.slider-group input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--accent-blue); cursor: pointer; box-shadow: 0 0 8px rgba(0,212,255,0.4);
+}
+.slider-value {
+  font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent-blue);
+  min-width: 50px; text-align: right;
+}
+
+/* ===== FLASHCARDS ===== */
+.flashcard-deck { perspective: 1000px; }
+.flashcard {
+  position: relative; width: 100%; min-height: 220px; cursor: pointer;
+  transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.flashcard.flipped { transform: rotateY(180deg); }
+.flashcard-face {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  border-radius: var(--radius); padding: 32px; display: flex;
+  flex-direction: column; justify-content: center; align-items: center;
+  text-align: center;
+}
+.flashcard-front {
+  background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(139,92,246,0.08));
+  border: 1px solid rgba(0,212,255,0.2);
+}
+.flashcard-back {
+  background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(0,212,255,0.08));
+  border: 1px solid rgba(16,185,129,0.2);
+  transform: rotateY(180deg);
+}
+.flashcard-counter { font-size: 0.78rem; color: var(--text-muted); margin-top: 16px; }
+.flashcard-nav { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+.flashcard-nav button {
+  padding: 10px 24px; border: 1px solid var(--glass-border); border-radius: 10px;
+  background: var(--glass-bg); color: var(--text-primary); cursor: pointer;
+  font-family: var(--font-main); font-weight: 600; font-size: 0.85rem;
+  transition: var(--transition);
+}
+.flashcard-nav button:hover { border-color: var(--accent-blue); background: rgba(0,212,255,0.1); }
+
+/* ===== QUIZ ===== */
+.quiz-question {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 24px 28px; margin-bottom: 16px;
+}
+.quiz-q-text { font-weight: 600; margin-bottom: 16px; }
+.quiz-q-num { color: var(--accent-blue); font-weight: 800; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-option {
+  padding: 12px 18px; border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
+  cursor: pointer; transition: var(--transition); font-size: 0.9rem;
+  background: rgba(255,255,255,0.02);
+}
+.quiz-option:hover { border-color: var(--accent-blue); background: rgba(0,212,255,0.05); }
+.quiz-option.correct { border-color: var(--accent-green); background: rgba(16,185,129,0.1); color: var(--accent-green); }
+.quiz-option.wrong { border-color: var(--accent-red); background: rgba(239,68,68,0.08); color: var(--accent-red); }
+.quiz-option.disabled { pointer-events: none; opacity: 0.7; }
+.quiz-explanation {
+  margin-top: 12px; padding: 12px 16px; border-radius: 8px;
+  background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.12);
+  font-size: 0.85rem; color: var(--text-secondary); display: none;
+}
+.quiz-score-bar {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 20px 28px; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 16px;
+}
+.quiz-score-fill {
+  flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden;
+}
+.quiz-score-fill-inner {
+  height: 100%; border-radius: 4px; transition: width 0.5s ease;
+  background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes glow {
+  0%,100% { box-shadow: 0 0 5px rgba(0,212,255,0.2); }
+  50% { box-shadow: 0 0 20px rgba(0,212,255,0.4); }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .nav-links { display: none; position: fixed; top: 60px; left: 0; right: 0; background: rgba(10,10,26,0.95); flex-direction: column; padding: 16px; gap: 4px; border-bottom: 1px solid var(--glass-border); backdrop-filter: blur(20px); }
+  .nav-links.show { display: flex; }
+  .hamburger { display: flex; }
+  .card { padding: 20px; }
+  .collapsible-header { padding: 16px 20px; }
+  .collapsible-content { padding: 16px 20px; }
+  .hero h1 { font-size: 2rem; }
+  .main-content { padding: 70px 12px 40px; }
+}
+
+/* ===== PRINT ===== */
+@media print {
+  body { background: #fff; color: #000; }
+  .top-nav, #progress-bar, .bg-grid, .bg-dots, .hamburger, .widget-container, .flashcard-deck, .flashcard-nav { display: none !important; }
+  .card { background: #f9f9f9; border: 1px solid #ddd; break-inside: avoid; }
+  .collapsible-body { max-height: none !important; opacity: 1 !important; }
+  .main-content { max-width: 100%; padding: 0 20px; }
+}
+
+/* ===== MISC ===== */
+.separator { height: 1px; background: linear-gradient(90deg, transparent, var(--glass-border), transparent); margin: 48px 0; }
+.text-gradient { background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.mono { font-family: var(--font-mono); }
+strong { color: var(--text-primary); }
+a { color: var(--accent-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.mt-1 { margin-top: 8px; } .mt-2 { margin-top: 16px; } .mt-3 { margin-top: 24px; }
+.mb-1 { margin-bottom: 8px; } .mb-2 { margin-bottom: 16px; } .mb-3 { margin-bottom: 24px; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- Background Effects -->
+<div class="bg-grid"></div>
+<div class="bg-dots"></div>
+
+<!-- Progress Bar -->
+<div id="progress-bar"></div>
+
+<!-- Navigation -->
+<nav class="top-nav" id="topNav">
+  <div class="nav-brand"><span>KIE2008</span>&nbsp; Ch.5</div>
+  <div class="nav-links" id="navLinks">
+    <a href="#module1">Geometric Rep.</a>
+    <a href="#module2">Binary Mod.</a>
+    <a href="#module3">Opt. Receiver</a>
+    <a href="#module4">M-ary Mod.</a>
+    <a href="#constellation-viz">Constellation</a>
+    <a href="#ber-calc">BER Calc</a>
+    <a href="#formulas">Formulas</a>
+    <a href="#traps">Traps</a>
+    <a href="#flashcards">Flashcards</a>
+    <a href="#quiz">Quiz</a>
+    <a href="#revision">Revision</a>
+  </div>
+  <div class="hamburger" id="hamburger" onclick="document.getElementById('navLinks').classList.toggle('show')">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-content">
+
+<!-- ==================== HERO ==================== -->
+<section class="hero" id="hero">
+  <div class="hero-badge">📡 KIE2008 Communication Systems</div>
+  <h1>Digital Modulation Techniques</h1>
+  <p>Chapter 5 — Based on Proakis &amp; Salehi (2014), Chapter 8</p>
+  <p style="font-size:0.88rem;color:var(--text-muted);">A complete study guide covering geometric signal representations, binary &amp; M-ary modulation, optimum receivers, and interactive tools.</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><div class="dot" style="background:var(--accent-blue)"></div>4 Modules</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--accent-purple)"></div>69 Slides Condensed</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--accent-green)"></div>Interactive Tools</div>
+    <div class="hero-meta-item"><div class="dot" style="background:var(--accent-pink)"></div>Exam-Ready</div>
+  </div>
+</section>
+
+<!-- ==================== PREREQUISITES ==================== -->
+<div class="card card-accent-orange" style="animation-delay:0.1s">
+  <div class="warning-box" style="border:none;padding:0;margin:0;background:none;">
+    <div class="warning-title">⚡ Prerequisites</div>
+    <p style="color:var(--text-secondary);margin-top:4px;">Before diving in, ensure you're comfortable with:</p>
+  </div>
+  <ul class="styled-list mt-2">
+    <li>Linear algebra basics — vectors, inner products, orthogonality, norms</li>
+    <li>Fourier analysis — transforms, spectral representations</li>
+    <li>Probability &amp; random processes (Chapter 2)</li>
+    <li>Analog-to-digital conversion (Chapter 4)</li>
+    <li>AWGN channel model</li>
+  </ul>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODULE 1: GEOMETRIC REPRESENTATION -->
+<!-- ============================================================ -->
+<div class="section-header" id="module1">
+  <div class="section-number">1</div>
+  <div>
+    <div class="section-title">Geometric Representation of Signal Waveforms</div>
+    <span class="tag tag-blue">Foundation</span>
+  </div>
+</div>
+
+<!-- 1.1 Introduction -->
+<div class="collapsible-header" onclick="toggleCollapsible(this)">
+  <h3>📡 1.1 Introduction — Why Digital Modulation?</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <p>After A/D conversion, digital signals must be transmitted over <strong>AWGN channels</strong> — the simplest (yet fundamental) model for both wireline and wireless channels. The core challenge: <em>digital information must be mapped into analog signal waveforms</em>.</p>
+
+    <div class="two-col mt-3">
+      <div class="card card-accent-blue" style="margin:0">
+        <h4 style="color:var(--accent-blue);margin-bottom:8px;">Baseband Channel</h4>
+        <p style="font-size:0.88rem;color:var(--text-secondary);">Passband includes \(f = 0\). No carrier needed. Examples: coaxial cable, twisted pair.</p>
+      </div>
+      <div class="card card-accent-purple" style="margin:0">
+        <h4 style="color:var(--accent-purple);margin-bottom:8px;">Bandpass Channel</h4>
+        <p style="font-size:0.88rem;color:var(--text-secondary);">Passband far from \(f = 0\). Carrier modulation required. Examples: radio, satellite.</p>
+      </div>
+    </div>
+
+    <div class="insight-box mt-3">
+      <div class="insight-title">💡 Key Concept</div>
+      <p><strong>Binary modulation</strong>: maps each bit to one of two waveforms \(s_1(t)\) or \(s_2(t)\).<br>
+      <strong>M-ary modulation</strong>: transmits \(k\) bits at a time using \(M = 2^k\) distinct waveforms.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 1.2 Gram-Schmidt -->
+<div class="collapsible-header active mt-1" onclick="toggleCollapsible(this)">
+  <h3>🔬 1.2 Gram-Schmidt Orthogonalization</h3>
+  <div class="collapsible-icon" style="transform:rotate(180deg)">▼</div>
+</div>
+<div class="collapsible-body open">
+  <div class="collapsible-content">
+    <div class="insight-box">
+      <div class="insight-title">🎯 Physical Intuition</div>
+      <p>Think of this like <strong>decomposing forces into x, y, z components</strong>. We take \(M\) signal waveforms and find \(N \le M\) orthonormal basis functions that span the same space.</p>
+    </div>
+
+    <h4 class="sub-section-title">Step-by-Step Procedure</h4>
+
+    <div class="eq-box">
+      <div class="eq-label">Step 1 — First basis function</div>
+      \[\psi_1(t) = \frac{s_1(t)}{\sqrt{\varepsilon_1}}, \qquad \varepsilon_1 = \int_0^T s_1^2(t)\,dt\]
+    </div>
+
+    <div class="eq-box">
+      <div class="eq-label">Step 2 — For the k-th signal</div>
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:8px;">Compute projections onto all existing basis functions:</p>
+      \[c_{ki} = \int_0^T s_k(t)\,\psi_i(t)\,dt, \quad i = 1, \ldots, k-1\]
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin:8px 0;">Subtract projections to get the residual:</p>
+      \[d_k(t) = s_k(t) - \sum_{i=1}^{k-1} c_{ki}\,\psi_i(t)\]
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin:8px 0;">If \(d_k(t) \neq 0\), normalize:</p>
+      \[\psi_k(t) = \frac{d_k(t)}{\sqrt{\varepsilon_k}}, \qquad \varepsilon_k = \int_0^T d_k^2(t)\,dt\]
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin:8px 0;">If \(d_k(t) = 0\): no new basis function — the signal is linearly dependent on previous ones.</p>
+    </div>
+
+    <div class="eq-box">
+      <div class="eq-label">Step 3 — Continue</div>
+      <p style="font-size:0.88rem;color:var(--text-secondary);">Repeat until all \(M\) signals are exhausted → yields \(N \le M\) orthonormal waveforms.</p>
+    </div>
+
+    <h4 class="sub-section-title">Key Properties</h4>
+    <ul class="styled-list">
+      <li>\(N\) orthonormal waveforms \(\{\psi_n(t)\}\) form a basis for the \(N\)-dimensional signal space</li>
+      <li>\(N = M\) if and only if all signals are linearly independent</li>
+      <li>Each signal can be represented as: \(s_m(t) = \sum_{n=1}^{N} s_{mn}\,\psi_n(t)\)</li>
+      <li>Coefficients: \(s_{mn} = \int_0^T s_m(t)\,\psi_n(t)\,dt\)</li>
+      <li>Energy preservation: \(\varepsilon_m = \sum_{n=1}^{N} |s_{mn}|^2 = \|\mathbf{s}_m\|^2\)</li>
+      <li>Inner product: \(\int_0^T s_m(t)\,s_n(t)\,dt = \mathbf{s}_m \cdot \mathbf{s}_n\)</li>
+    </ul>
+
+    <div class="trap-box mt-3">
+      <div class="trap-title">⚠️ Exam Trap</div>
+      <p>The orthonormal basis set is <strong>NOT unique</strong>! Different orderings of signals produce different bases. However, geometric properties (distances, energies, angles) are <strong>invariant</strong>.</p>
+    </div>
+
+    <h4 class="sub-section-title">Worked Example 1</h4>
+    <div class="card card-accent-green" style="background: rgba(16,185,129,0.03);">
+      <p><strong>Given:</strong> 4 signal waveforms. Find the orthonormal basis.</p>
+      <div class="eq-box">
+        <div class="eq-label">Solution</div>
+        <ul class="styled-list">
+          <li>\(\varepsilon_1 = 2\), so \(\psi_1(t) = s_1(t)/\sqrt{2}\)</li>
+          <li>\(c_{21} = 0 \Rightarrow d_2(t) = s_2(t)\), \(\varepsilon_2 = 2\), \(\psi_2(t) = s_2(t)/\sqrt{2}\)</li>
+          <li>\(c_{31} = 0\), \(c_{32} = -\sqrt{2}\), \(d_3(t) = s_3(t) + \sqrt{2}\,\psi_2(t)\), \(\varepsilon_3 = 1\), \(\psi_3(t) = d_3(t)\)</li>
+          <li>\(c_{41} = \sqrt{2}\), \(c_{42} = 0\), \(c_{43} = 1\), \(d_4(t) = 0\) → <strong>No new basis function!</strong></li>
+        </ul>
+      </div>
+      <p class="mt-2"><strong>Result:</strong> \(N = 3\) dimensions for 4 signals.</p>
+      <p class="mt-1"><strong>Signal vectors:</strong></p>
+      <div class="eq-box">
+        \[\mathbf{s}_1 = (\sqrt{2},\,0,\,0), \quad \mathbf{s}_2 = (0,\,\sqrt{2},\,0), \quad \mathbf{s}_3 = (0,\,-\sqrt{2},\,1), \quad \mathbf{s}_4 = (\sqrt{2},\,0,\,1)\]
+      </div>
+      <p class="mt-1" style="color:var(--text-secondary);font-size:0.88rem;"><strong>Alternative basis</strong> gives: \(\mathbf{s}_1=(1,1,0)\), \(\mathbf{s}_2=(1,-1,0)\), \(\mathbf{s}_3=(-1,1,1)\), \(\mathbf{s}_4=(1,1,1)\)</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODULE 2: BINARY MODULATION -->
+<!-- ============================================================ -->
+<div class="separator"></div>
+<div class="section-header" id="module2">
+  <div class="section-number">2</div>
+  <div>
+    <div class="section-title">Binary Modulation Schemes</div>
+    <span class="tag tag-purple">Core</span>
+  </div>
+</div>
+
+<!-- 2.1 Binary Antipodal -->
+<div class="collapsible-header" onclick="toggleCollapsible(this)">
+  <h3>🔄 2.1 Binary Antipodal Signaling (Binary PAM)</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <div class="insight-box">
+      <div class="insight-title">🎯 Physical Intuition</div>
+      <p>Like flipping a switch — bit 1 sends \(+p(t)\), bit 0 sends \(-p(t)\). The signals are <strong>mirror images</strong>.</p>
+    </div>
+
+    <div class="eq-box important">
+      <div class="eq-label">Binary PAM Waveforms</div>
+      \[s_m(t) = A_m \cdot g_T(t), \quad 0 \le t \le T_b, \quad m = 1,2\]
+      \[A_1 = A, \quad A_2 = -A\]
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;">where \(g_T(t)\) is a rectangular pulse of unit amplitude.</p>
+    </div>
+
+    <ul class="styled-list">
+      <li><strong>Bit rate:</strong> \(R_b = 1/T_b\) bits/sec</li>
+      <li><strong>Energy:</strong> \(\varepsilon_m = A^2 T_b\) for both waveforms → \(A = \sqrt{\varepsilon_b / T_b}\)</li>
+      <li><strong>1D Geometric representation:</strong> \(s_1 = +\sqrt{\varepsilon_b}\), \(s_2 = -\sqrt{\varepsilon_b}\)</li>
+      <li><strong>Unit energy basis:</strong> \(\psi(t) = g_T(t)/\sqrt{T_b}\)</li>
+    </ul>
+
+    <div class="warning-box mt-2">
+      <div class="warning-title">📌 Important</div>
+      <p>Any antipodal pair has the <strong>same geometric representation</strong> regardless of pulse shape — only the energy matters!</p>
+    </div>
+  </div>
+</div>
+
+<!-- 2.2 BASK -->
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>📻 2.2 Binary ASK (BASK)</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <p>BASK is a special case: antipodal baseband signals modulate a carrier \(\cos(2\pi f_c t)\).</p>
+
+    <div class="eq-box">
+      <div class="eq-label">BASK Waveforms</div>
+      \[s_1(t) = p(t)\cos(2\pi f_c t), \quad s_2(t) = -p(t)\cos(2\pi f_c t), \quad 0 \le t \le T_b\]
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;">For rectangular pulse: \(p(t) = \sqrt{2\varepsilon_b / T_b}\)</p>
+    </div>
+
+    <div class="eq-box">
+      <div class="eq-label">Basis Function</div>
+      \[\psi(t) = \sqrt{\frac{2}{T_b}} \cos(2\pi f_c t)\]
+    </div>
+
+    <p class="mt-2" style="color:var(--text-secondary);">Bandpass signals with spectrum centered near \(\pm f_c\). Same <strong>1D geometric representation</strong> as Binary PAM.</p>
+  </div>
+</div>
+
+<!-- 2.3 Binary Orthogonal -->
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>📐 2.3 Binary Orthogonal Signaling</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <div class="insight-box">
+      <div class="insight-title">🎯 Physical Intuition</div>
+      <p>Instead of being opposite (antipodal), the two signals are <strong>perpendicular (orthogonal)</strong> in signal space.</p>
+    </div>
+
+    <ul class="styled-list">
+      <li>\(s_1(t)\) and \(s_2(t)\) have equal energy \(\varepsilon_b\) and are orthogonal: \(\int_0^{T_b} s_1(t)\,s_2(t)\,dt = 0\)</li>
+      <li>Two basis functions: \(\psi_1(t) = s_1(t)/\sqrt{\varepsilon_b}\), \(\psi_2(t) = s_2(t)/\sqrt{\varepsilon_b}\)</li>
+    </ul>
+
+    <div class="eq-box important">
+      <div class="eq-label">2D Signal Vectors</div>
+      \[\mathbf{s}_1 = (\sqrt{\varepsilon_b},\, 0), \qquad \mathbf{s}_2 = (0,\, \sqrt{\varepsilon_b})\]
+    </div>
+  </div>
+</div>
+
+<!-- 2.4 Binary PPM -->
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>⏱️ 2.4 Binary PPM (Pulse Position Modulation)</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <ul class="styled-list">
+      <li>Two pulses differ only in <strong>time position</strong></li>
+      <li>Orthogonal with equal energies → baseband signal (spectrum centered near \(f=0\))</li>
+    </ul>
+    <div class="eq-box">
+      <div class="eq-label">Signal Vectors</div>
+      \[\mathbf{s}_1 = (\sqrt{\varepsilon_b},\, 0), \qquad \mathbf{s}_2 = (0,\, \sqrt{\varepsilon_b})\]
+    </div>
+    <p style="color:var(--text-muted);font-size:0.88rem;">Same geometry as binary orthogonal signaling.</p>
+  </div>
+</div>
+
+<!-- 2.5 Binary FSK -->
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>🎵 2.5 Binary FSK (Frequency Shift Keying)</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <div class="eq-box">
+      <div class="eq-label">BFSK Waveforms</div>
+      \[s_1(t) = \sqrt{\frac{2\varepsilon_b}{T_b}}\cos(2\pi f_1 t), \qquad s_2(t) = \sqrt{\frac{2\varepsilon_b}{T_b}}\cos(2\pi f_2 t)\]
+      \[f_1 = \frac{k_1}{2T_b}, \quad f_2 = \frac{k_2}{2T_b} \quad \text{(distinct positive integers } k_1, k_2\text{)}\]
+    </div>
+    <ul class="styled-list">
+      <li>Frequency separation: \(\Delta f = m/(2T_b)\)</li>
+      <li>Orthogonal and equal energy → same geometric representation as PPM</li>
+      <li>Bandpass signals (spectrum near \(f_1\) and \(f_2\))</li>
+    </ul>
+
+    <h4 class="sub-section-title mt-3">PPM vs FSK Comparison</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Property</th><th>PPM</th><th>FSK</th></tr></thead>
+        <tbody>
+          <tr><td>Spectrum</td><td>Baseband</td><td>Bandpass</td></tr>
+          <tr><td>Bandwidth</td><td>More (short pulses)</td><td>Less</td></tr>
+          <tr><td>Noise immunity</td><td>Less</td><td>More (info in frequency)</td></tr>
+          <tr><td>Circuitry</td><td>Simpler</td><td>More complex</td></tr>
+          <tr><td><strong>AWGN performance</strong></td><td colspan="2" style="text-align:center;color:var(--accent-green);font-weight:700;">IDENTICAL (same geometry)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODULE 3: OPTIMUM RECEIVER -->
+<!-- ============================================================ -->
+<div class="separator"></div>
+<div class="section-header" id="module3">
+  <div class="section-number">3</div>
+  <div>
+    <div class="section-title">Optimum Receiver for AWGN</div>
+    <span class="tag tag-green">Design</span>
+  </div>
+</div>
+
+<!-- 3.1 AWGN -->
+<div class="collapsible-header" onclick="toggleCollapsible(this)">
+  <h3>🌊 3.1 AWGN Channel Model</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <div class="eq-box important">
+      <div class="eq-label">Noise Power Spectral Density</div>
+      \[S_n(f) = \frac{N_0}{2} \quad \text{(W/Hz)}\]
+    </div>
+    <p style="color:var(--text-secondary);">Goal: design a receiver to <strong>minimize</strong> the probability of error \(P_E\).</p>
+  </div>
+</div>
+
+<!-- 3.2 Receiver Components -->
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>🔧 3.2 Receiver Architecture</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <div class="two-col">
+      <div class="card card-accent-blue" style="margin:0;">
+        <h4 style="color:var(--accent-blue);margin-bottom:8px;">1. Signal Demodulator</h4>
+        <p style="font-size:0.88rem;color:var(--text-secondary);">Converts received signal \(r(t) \to\) observation vector \(\mathbf{y}\)</p>
+      </div>
+      <div class="card card-accent-purple" style="margin:0;">
+        <h4 style="color:var(--accent-purple);margin-bottom:8px;">2. Detector</h4>
+        <p style="font-size:0.88rem;color:var(--text-secondary);">Decides which waveform \(s_m(t)\) was sent based on \(\mathbf{y}\)</p>
+      </div>
+    </div>
+
+    <h4 class="sub-section-title mt-3">Two Types of Demodulator</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Type</th><th>Method</th><th>Pros</th><th>Cons</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Correlation (Coherent)</strong></td><td>Multiplies \(r(t)\) by synchronized reference, then integrates</td><td>High accuracy</td><td>Complex (needs phase sync)</td></tr>
+          <tr><td><strong>Matched Filter (Non-coherent)</strong></td><td>Filters with \(h(t) = s(T-t)\), samples output</td><td>Simpler implementation</td><td>More noise-prone</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 3.3 Error Probability -->
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>📊 3.3 Error Probability</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <div class="eq-box important">
+      <div class="eq-label">Binary Antipodal (PAM / BASK)</div>
+      \[P_E = Q\!\left(\sqrt{\frac{2\varepsilon_b}{N_0}}\right)\]
+    </div>
+    <div class="eq-box important">
+      <div class="eq-label">Binary Orthogonal (PPM / FSK)</div>
+      \[P_E = Q\!\left(\sqrt{\frac{\varepsilon_b}{N_0}}\right)\]
+    </div>
+
+    <div class="trap-box mt-2">
+      <div class="trap-title">⚠️ Critical: 3 dB Advantage</div>
+      <p>Antipodal signaling requires <strong>3 dB LESS energy</strong> than orthogonal for the same \(P_E\). This is because the Euclidean distance between antipodal signals is \(d_{12} = 2\sqrt{\varepsilon_b}\) vs. \(d_{12} = \sqrt{2\varepsilon_b}\) for orthogonal.</p>
+    </div>
+
+    <div class="eq-box mt-2">
+      <div class="eq-label">General Formula (Any Binary)</div>
+      \[P_E = Q\!\left(\sqrt{\frac{d_{12}^2}{2N_0}}\right), \qquad d_{12}^2 = \int_0^{T_b} |s_1(t) - s_2(t)|^2\,dt\]
+    </div>
+
+    <h4 class="sub-section-title mt-3">Worked Example 4</h4>
+    <div class="card card-accent-green" style="background:rgba(16,185,129,0.03);">
+      <p><strong>Given:</strong> Piecewise signals \(s_1(t)\) and \(s_2(t)\). Find BER.</p>
+      <div class="eq-box">
+        <div class="eq-label">Solution</div>
+        \[d_{12}^2 = \int_0^{T_b} |s_1(t) - s_2(t)|^2\,dt = \frac{4}{3}T_b\]
+        \[P_E = Q\!\left(\sqrt{\frac{2T_b}{3N_0}}\right)\]
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODULE 4: M-ARY MODULATION -->
+<!-- ============================================================ -->
+<div class="separator"></div>
+<div class="section-header" id="module4">
+  <div class="section-number">4</div>
+  <div>
+    <div class="section-title">M-ary Digital Modulations</div>
+    <span class="tag tag-pink">Advanced</span>
+  </div>
+</div>
+
+<!-- 4.1 M-ary PAM -->
+<div class="collapsible-header" onclick="toggleCollapsible(this)">
+  <h3>📶 4.1 M-ary PAM</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <ul class="styled-list">
+      <li>\(k\)-bit symbols select \(M = 2^k\) amplitudes</li>
+      <li>Symbol rate: \(R_s = 1/T\), Bit rate: \(R_b = k/T = 1/T_b\)</li>
+    </ul>
+
+    <div class="eq-box">
+      <div class="eq-label">M-PAM Signal</div>
+      \[s_m(t) = A_m \cdot p(t) = s_m \cdot \psi(t), \quad m = 1,\ldots,M\]
+      \[A_m = (2m - 1 - M)\,A, \quad m = 1,\ldots,M\]
+    </div>
+
+    <p class="mt-2" style="color:var(--text-secondary);">Amplitudes are <strong>symmetric about the origin</strong>.</p>
+
+    <div class="eq-box important">
+      <div class="eq-label">Average Energy</div>
+      \[\varepsilon_{\text{av}} = \frac{A^2\,\varepsilon_p\,(M^2 - 1)}{3}\]
+    </div>
+
+    <p class="mt-2" style="color:var(--text-secondary);font-size:0.88rem;"><strong>Example M=4:</strong> amplitudes \(\{-3A, -A, A, 3A\}\), \(\varepsilon_{\text{av}} = 5A^2T = 5d^2\).</p>
+  </div>
+</div>
+
+<!-- 4.2 M-ary ASK -->
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>📡 4.2 M-ary ASK</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <p>Baseband PAM modulated onto a carrier: \(u_m(t) = s_m(t)\cos(2\pi f_c t)\). This creates DSB-SC AM with bandwidth \(2W\).</p>
+
+    <div class="trap-box">
+      <div class="trap-title">⚠️ Exam Trap</div>
+      <p>Energy in bandpass = <strong>HALF</strong> of baseband energy (when \(f_c \gg W\)).</p>
+    </div>
+
+    <div class="eq-box">
+      <div class="eq-label">Basis Function</div>
+      \[\psi_c(t) = \sqrt{\frac{2}{\varepsilon_p}}\,p(t)\cos(2\pi f_c t), \qquad N = 1\]
+    </div>
+
+    <div class="eq-box important">
+      <div class="eq-label">Error Probability</div>
+      \[P_M = \frac{2(M-1)}{M}\,Q\!\left(\sqrt{\frac{6\,\varepsilon_{\text{av}}}{(M^2 - 1)\,N_0}}\right)\]
+      <p style="font-size:0.82rem;color:var(--text-secondary);margin-top:6px;">In terms of \(\varepsilon_b\):</p>
+      \[P_M = \frac{2(M-1)}{M}\,Q\!\left(\sqrt{\frac{6(\log_2 M)\,\varepsilon_{b,\text{av}}}{(M^2 - 1)\,N_0}}\right)\]
+    </div>
+  </div>
+</div>
+
+<!-- 4.3 PSK -->
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>🔵 4.3 Phase-Shift Keying (PSK)</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <div class="insight-box">
+      <div class="insight-title">🎯 Physical Intuition</div>
+      <p>All signals have the <strong>same amplitude</strong> but <strong>different phases</strong> — they sit on a circle in signal space.</p>
+    </div>
+
+    <div class="eq-box">
+      <div class="eq-label">M-PSK Waveform</div>
+      \[u_m(t) = p(t)\cos\!\left(2\pi f_c t + \frac{2\pi m}{M}\right), \quad m = 0,1,\ldots,M-1\]
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;">For rectangular pulse:</p>
+      \[u_m(t) = \sqrt{\frac{2\varepsilon_s}{T}}\cos\!\left(2\pi f_c t + \frac{2\pi m}{M}\right)\]
+    </div>
+
+    <ul class="styled-list">
+      <li>Energy per bit: \(\varepsilon_b = \varepsilon_s / \log_2(M)\)</li>
+      <li>2D basis: \(\psi_1(t) = \frac{1}{\sqrt{\varepsilon_s}}g_T(t)\cos(2\pi f_c t)\), \(\psi_2(t) = -\frac{1}{\sqrt{\varepsilon_s}}g_T(t)\sin(2\pi f_c t)\)</li>
+      <li><strong>BPSK = BASK</strong> (special case)</li>
+    </ul>
+
+    <div class="eq-box important">
+      <div class="eq-label">2D Signal Vectors</div>
+      \[\mathbf{s}_m = \left(\sqrt{\varepsilon_s}\cos\frac{2\pi m}{M},\; \sqrt{\varepsilon_s}\sin\frac{2\pi m}{M}\right)\]
+    </div>
+
+    <h4 class="sub-section-title mt-3">QPSK (M = 4)</h4>
+    <p style="color:var(--text-secondary);font-size:0.92rem;">\(u_m(t)\) for \(m=0,1,2,3\) gives carriers: \(\cos,\; -\sin,\; -\cos,\; \sin\).</p>
+
+    <div class="insight-box mt-2">
+      <div class="insight-title">💡 Gray Encoding</div>
+      <p>Adjacent phases differ by only <strong>1 bit</strong> → minimizes <em>bit</em> errors (not symbol errors).</p>
+    </div>
+
+    <h4 class="sub-section-title mt-3">Euclidean Distance</h4>
+    <div class="eq-box">
+      <div class="eq-label">Distance Between Signal Points</div>
+      \[d_{mn} = \sqrt{2\varepsilon_s\!\left(1 - \cos\frac{2\pi(m-n)}{M}\right)}\]
+      \[d_{\min} = 2\sqrt{\varepsilon_s}\sin\frac{\pi}{M}\]
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;">For large \(M\): \(d_{\min} \approx 2\pi\sqrt{\varepsilon_s}/M\)</p>
+    </div>
+
+    <h4 class="sub-section-title mt-3">Error Probability</h4>
+    <div class="eq-box important">
+      <div class="eq-label">M-PSK Symbol Error Probability</div>
+      \[P_2 = Q\!\left(\sqrt{\frac{2\varepsilon_b}{N_0}}\right)\]
+      \[P_4 \approx 2Q\!\left(\sqrt{\frac{2\varepsilon_b}{N_0}}\right)\]
+      \[P_M \approx 2Q\!\left(\sqrt{\frac{2\pi^2(\log_2 M)\,\varepsilon_b}{M^2 N_0}}\right) \approx 2Q\!\left(\frac{d_{\min}}{\sqrt{2N_0}}\right)\]
+    </div>
+
+    <div class="trap-box mt-2">
+      <div class="trap-title">⚠️ Key Rule</div>
+      <p>Doubling \(M\) in PSK requires approximately <strong>+6 dB/bit</strong> more energy for the same error performance.</p>
+    </div>
+
+    <h4 class="sub-section-title mt-3">Worked Example 7</h4>
+    <div class="card card-accent-green" style="background:rgba(16,185,129,0.03);">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>M</th><th>\(d_{\min}\)</th></tr></thead>
+          <tbody>
+            <tr><td>2</td><td>\(2\sqrt{\varepsilon_s}\)</td></tr>
+            <tr><td>4</td><td>\(\sqrt{2\varepsilon_s}\)</td></tr>
+            <tr><td>8</td><td>\(2\sqrt{\varepsilon_s}\sin(\pi/8) = \sqrt{0.586\,\varepsilon_s}\)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-2" style="color:var(--text-secondary);font-size:0.88rem;">To match M=4's \(d_{\min}\): must increase \(\varepsilon_s\) by factor \(2/0.586 = 3.41 = 5.3\) dB.<br>For large \(M\): doubling phases → <strong>+6 dB needed</strong> (since \(\sin(\pi/M) \approx \pi/M\)).</p>
+    </div>
+  </div>
+</div>
+
+<!-- 4.4 QAM -->
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>🟣 4.4 QAM (Quadrature Amplitude Modulation)</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <div class="insight-box">
+      <div class="insight-title">🎯 Physical Intuition</div>
+      <p>Combine amplitude AND phase modulation. Instead of constraining points to a circle (PSK), <strong>spread them over a grid</strong> → more efficient use of signal space.</p>
+    </div>
+
+    <div class="eq-box">
+      <div class="eq-label">QAM Waveform</div>
+      \[u_m(t) = A_{mc}\,g_T(t)\cos(2\pi f_c t) - A_{ms}\,g_T(t)\sin(2\pi f_c t)\]
+    </div>
+
+    <ul class="styled-list">
+      <li><strong>16-QAM</strong> = 4-PAM on each quadrature carrier</li>
+      <li>Combined form: \(u_{mn}(t) = A_m \cdot g_T(t) \cdot \cos(2\pi f_c t + \theta_n)\)</li>
+      <li>If \(M_1 = 2^{k_1}\), \(M_2 = 2^{k_2}\): transmits \(k_1 + k_2\) bits/symbol</li>
+      <li>Symbol rate: \(R_s = R_b/(k_1 + k_2)\)</li>
+      <li>Same 2D basis as PSK</li>
+    </ul>
+
+    <div class="eq-box">
+      <div class="eq-label">Geometric Representation</div>
+      \[\mathbf{s}_m = \left(\sqrt{\varepsilon_s}\,A_{mc},\;\sqrt{\varepsilon_s}\,A_{ms}\right)\]
+      \[\varepsilon_{\text{av}} = \frac{1}{M}\sum_{i=1}^{M}\|\mathbf{s}_i\|^2\]
+    </div>
+
+    <div class="eq-box important">
+      <div class="eq-label">QAM Error Probability Bounds</div>
+      \[1 - \left(1 - 2Q\!\left(\sqrt{\frac{3\,\varepsilon_{\text{av}}}{(M-1)\,N_0}}\right)\right)^{\!2} \;\le\; P_M \;\le\; 4Q\!\left(\sqrt{\frac{3k\,\varepsilon_{b,\text{av}}}{(M-1)\,N_0}}\right)\]
+    </div>
+
+    <h4 class="sub-section-title mt-3">QAM vs PSK</h4>
+    <div class="eq-box">
+      <div class="eq-label">Performance Ratio</div>
+      \[R_M = \frac{(P_M)_{\text{QAM}}}{(P_M)_{\text{PSK}}} = \frac{3}{(M-1)\cdot 2\sin^2(\pi/M)}\]
+    </div>
+    <p class="mt-1" style="color:var(--text-secondary);font-size:0.88rem;">QAM is <strong>superior</strong> for \(M > 4\); same at \(M = 4\).</p>
+
+    <h4 class="sub-section-title mt-3">Worked Example 8</h4>
+    <div class="card card-accent-green" style="background:rgba(16,185,129,0.03);">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Constellation</th><th>Avg Power</th><th>dB</th></tr></thead>
+          <tbody>
+            <tr><td>8-point rectangular</td><td>6</td><td>7.8 dB</td></tr>
+            <tr><td>8-point PAM-PSK</td><td>4.7</td><td>6.7 dB</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-2" style="color:var(--text-secondary);font-size:0.88rem;">PAM-PSK is <strong>~1.1 dB more power efficient</strong> than rectangular.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 4.5 M-ary FSK -->
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>🎵 4.5 M-ary FSK</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <div class="eq-box">
+      <div class="eq-label">M-FSK Waveform</div>
+      \[u_m(t) = \sqrt{\frac{2\varepsilon_s}{T}}\cos\!\big(2\pi(f_c + m\Delta f)\,t\big), \quad m = 0,\ldots,M-1\]
+    </div>
+
+    <ul class="styled-list">
+      <li>\(\varepsilon_s = k\varepsilon_b\), \(T = kT_b\)</li>
+      <li>Orthogonal signals → \(M\)-dimensional representation</li>
+      <li>\(\mathbf{s}_0 = (\sqrt{\varepsilon_s},0,\ldots,0)\), \(\mathbf{s}_1 = (0,\sqrt{\varepsilon_s},\ldots,0)\), …</li>
+      <li>\(d = \sqrt{2\varepsilon_s}\) for all pairs</li>
+      <li>Correlation: \(\gamma_{mn} = \text{sinc}(2\pi(m-n)\Delta f\, T)\)</li>
+    </ul>
+
+    <div class="two-col mt-2">
+      <div class="card card-accent-blue" style="margin:0;">
+        <h4 style="color:var(--accent-blue);margin-bottom:8px;">Coherent Detection</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary);">Requires phase estimation. Better performance.</p>
+      </div>
+      <div class="card card-accent-purple" style="margin:0;">
+        <h4 style="color:var(--accent-purple);margin-bottom:8px;">Non-coherent Detection</h4>
+        <p style="font-size:0.85rem;color:var(--text-secondary);">Envelope detection. Simpler but worse by ~1 dB.</p>
+      </div>
+    </div>
+
+    <div class="insight-box mt-3">
+      <div class="insight-title">🌟 Unique Property of M-FSK</div>
+      <p>SNR per bit <strong>DECREASES</strong> as \(M\) increases — less power needed! This is the <strong>opposite</strong> of PSK/QAM behavior. M-FSK trades <strong>bandwidth for power efficiency</strong>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- INTERACTIVE: CONSTELLATION VISUALIZER -->
+<!-- ============================================================ -->
+<div class="separator"></div>
+<div class="section-header" id="constellation-viz">
+  <div class="section-number" style="background:linear-gradient(135deg,var(--accent-green),var(--accent-blue));">⚡</div>
+  <div>
+    <div class="section-title">Signal Constellation Visualizer</div>
+    <span class="tag tag-green">Interactive</span>
+  </div>
+</div>
+
+<div class="widget-container">
+  <div class="widget-title">📡 Interactive Constellation Diagram</div>
+  <div class="widget-controls">
+    <button class="widget-btn active" onclick="setConstellation('psk',this)">PSK</button>
+    <button class="widget-btn" onclick="setConstellation('qam',this)">QAM</button>
+    <button class="widget-btn" onclick="setConstellation('pam',this)">PAM</button>
+    <button class="widget-btn" onclick="setConstellation('fsk',this)">FSK</button>
+  </div>
+  <div class="widget-controls">
+    <div class="slider-group">
+      <label>M =</label>
+      <input type="range" id="constM" min="2" max="64" value="8" oninput="updateConstellation()">
+      <span class="slider-value" id="constMVal">8</span>
+    </div>
+    <div class="slider-group">
+      <label>Show d<sub>min</sub></label>
+      <input type="checkbox" id="showDmin" checked onchange="updateConstellation()" style="width:18px;height:18px;cursor:pointer;">
+    </div>
+  </div>
+  <div class="widget-canvas-wrap">
+    <canvas id="constellationCanvas" width="600" height="500"></canvas>
+  </div>
+  <div id="constInfo" style="margin-top:12px;font-size:0.85rem;color:var(--text-secondary);font-family:var(--font-mono);"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- INTERACTIVE: BER CALCULATOR -->
+<!-- ============================================================ -->
+<div class="separator"></div>
+<div class="section-header" id="ber-calc">
+  <div class="section-number" style="background:linear-gradient(135deg,var(--accent-purple),var(--accent-pink));">📊</div>
+  <div>
+    <div class="section-title">BER Calculator &amp; Curves</div>
+    <span class="tag tag-purple">Interactive</span>
+  </div>
+</div>
+
+<div class="widget-container">
+  <div class="widget-title">📈 BER vs Eb/N0 Curves</div>
+  <div class="widget-controls">
+    <div class="slider-group">
+      <label>E<sub>b</sub>/N<sub>0</sub> (dB):</label>
+      <input type="range" id="ebnoDB" min="0" max="20" value="10" step="0.5" oninput="updateBER()">
+      <span class="slider-value" id="ebnoVal">10.0 dB</span>
+    </div>
+  </div>
+  <div class="widget-controls" style="flex-wrap:wrap;">
+    <label style="font-size:0.82rem;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="showBPAM" checked onchange="drawBERcurves()" style="accent-color:var(--accent-blue)"> <span style="color:var(--accent-blue);">Binary PAM</span></label>
+    <label style="font-size:0.82rem;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="showBOrth" checked onchange="drawBERcurves()" style="accent-color:var(--accent-green)"> <span style="color:var(--accent-green);">Binary Orth.</span></label>
+    <label style="font-size:0.82rem;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="showQPSK" checked onchange="drawBERcurves()" style="accent-color:var(--accent-purple)"> <span style="color:var(--accent-purple);">QPSK</span></label>
+    <label style="font-size:0.82rem;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="show8PSK" checked onchange="drawBERcurves()" style="accent-color:var(--accent-pink)"> <span style="color:var(--accent-pink);">8-PSK</span></label>
+    <label style="font-size:0.82rem;display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="show16QAM" checked onchange="drawBERcurves()" style="accent-color:var(--accent-orange)"> <span style="color:var(--accent-orange);">16-QAM</span></label>
+  </div>
+  <div class="widget-canvas-wrap">
+    <canvas id="berCanvas" width="700" height="450"></canvas>
+  </div>
+  <div id="berReadout" style="margin-top:12px;font-size:0.85rem;color:var(--text-secondary);font-family:var(--font-mono);"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FORMULA SUMMARY TABLE -->
+<!-- ============================================================ -->
+<div class="separator"></div>
+<div class="section-header" id="formulas">
+  <div class="section-number" style="background:linear-gradient(135deg,var(--accent-orange),var(--accent-pink));">Σ</div>
+  <div>
+    <div class="section-title">Comprehensive Formula Summary</div>
+    <span class="tag tag-orange">Reference</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Modulation</th><th>Dimension</th><th>\(d_{\min}\)</th><th>Error Probability \(P_E\) or \(P_M\)</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Binary PAM</strong></td><td>1D</td><td>\(2\sqrt{\varepsilon_b}\)</td>
+          <td>\(Q\!\left(\sqrt{2\varepsilon_b/N_0}\right)\)</td>
+        </tr>
+        <tr>
+          <td><strong>BASK</strong></td><td>1D</td><td>\(2\sqrt{\varepsilon_b}\)</td>
+          <td>\(Q\!\left(\sqrt{2\varepsilon_b/N_0}\right)\)</td>
+        </tr>
+        <tr>
+          <td><strong>Binary Orthogonal</strong></td><td>2D</td><td>\(\sqrt{2\varepsilon_b}\)</td>
+          <td>\(Q\!\left(\sqrt{\varepsilon_b/N_0}\right)\)</td>
+        </tr>
+        <tr>
+          <td><strong>PPM / BFSK</strong></td><td>2D</td><td>\(\sqrt{2\varepsilon_b}\)</td>
+          <td>\(Q\!\left(\sqrt{\varepsilon_b/N_0}\right)\)</td>
+        </tr>
+        <tr>
+          <td><strong>M-PAM</strong></td><td>1D</td><td>\(2d\)</td>
+          <td>\(\frac{2(M-1)}{M}Q\!\left(\sqrt{\frac{6\varepsilon_{\text{av}}}{(M^2-1)N_0}}\right)\)</td>
+        </tr>
+        <tr>
+          <td><strong>M-ASK</strong></td><td>1D</td><td>\(\sqrt{2}\,d\)</td>
+          <td>\(\frac{2(M-1)}{M}Q\!\left(\sqrt{\frac{6\log_2 M\;\varepsilon_{b}}{(M^2-1)N_0}}\right)\)</td>
+        </tr>
+        <tr>
+          <td><strong>M-PSK</strong></td><td>2D</td><td>\(2\sqrt{\varepsilon_s}\sin(\pi/M)\)</td>
+          <td>\(2Q\!\left(\sqrt{\frac{2\pi^2\log_2 M\;\varepsilon_b}{M^2 N_0}}\right)\)</td>
+        </tr>
+        <tr>
+          <td><strong>M-QAM</strong></td><td>2D</td><td>\(\sqrt{6\varepsilon_{\text{av}}/(M-1)}\)</td>
+          <td>\(\le 4Q\!\left(\sqrt{\frac{3k\,\varepsilon_{b}}{(M-1)N_0}}\right)\)</td>
+        </tr>
+        <tr>
+          <td><strong>M-FSK</strong></td><td>\(M\)-D</td><td>\(\sqrt{2\varepsilon_s}\)</td>
+          <td>\(\le (M-1)\,Q\!\left(\sqrt{\varepsilon_s/N_0}\right)\)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="eq-box mt-3">
+    <div class="eq-label">Key Relationships</div>
+    \[\varepsilon_s = k\,\varepsilon_b = (\log_2 M)\,\varepsilon_b, \qquad R_b = k \cdot R_s, \qquad M = 2^k\]
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TRAPS & MISCONCEPTIONS -->
+<!-- ============================================================ -->
+<div class="separator"></div>
+<div class="section-header" id="traps">
+  <div class="section-number" style="background:linear-gradient(135deg,var(--accent-red),var(--accent-orange));">!</div>
+  <div>
+    <div class="section-title">Common Traps &amp; Misconceptions</div>
+    <span class="tag tag-pink">Exam Prep</span>
+  </div>
+</div>
+
+<div class="card card-accent-pink">
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <div class="trap-box" style="margin:0;">
+      <div class="trap-title">⚠️ Trap #1: Antipodal vs Orthogonal Geometry</div>
+      <p>Antipodal signals are <em>opposite</em> on a line (1D); orthogonal are <em>perpendicular</em> (2D). Their \(P_E\) formulas differ by a factor of 2 inside the Q function. Don't mix them up!</p>
+    </div>
+
+    <div class="trap-box" style="margin:0;">
+      <div class="trap-title">⚠️ Trap #2: The 3 dB Advantage</div>
+      <p>Antipodal requires 3 dB LESS energy than orthogonal. Reason: \(d_{\min}^2 = 4\varepsilon_b\) (antipodal) vs \(2\varepsilon_b\) (orthogonal).</p>
+    </div>
+
+    <div class="trap-box" style="margin:0;">
+      <div class="trap-title">⚠️ Trap #3: \(\varepsilon_b\) vs \(\varepsilon_s\)</div>
+      <p>\(\varepsilon_s = k \cdot \varepsilon_b = (\log_2 M) \cdot \varepsilon_b\). Always check whether the formula uses energy per <strong>bit</strong> or per <strong>symbol</strong>!</p>
+    </div>
+
+    <div class="trap-box" style="margin:0;">
+      <div class="trap-title">⚠️ Trap #4: Bandpass Energy Halving</div>
+      <p>For M-ary ASK: bandpass energy = <strong>HALF</strong> of baseband energy. This comes from \(\cos^2(2\pi f_c t) \to 1/2\) when \(f_c \gg 1/T\).</p>
+    </div>
+
+    <div class="trap-box" style="margin:0;">
+      <div class="trap-title">⚠️ Trap #5: PSK Equal Energy, QAM Not</div>
+      <p>In PSK, all signals have the <strong>same</strong> energy (points on a circle). In QAM, signals have <strong>different</strong> energies (points on a grid).</p>
+    </div>
+
+    <div class="trap-box" style="margin:0;">
+      <div class="trap-title">⚠️ Trap #6: M-FSK Dimensionality</div>
+      <p>M-FSK uses \(M\) dimensions (one per frequency). This is unique — all other schemes use at most 2D.</p>
+    </div>
+
+    <div class="trap-box" style="margin:0;">
+      <div class="trap-title">⚠️ Trap #7: M-FSK Performance Direction</div>
+      <p>M-FSK performance <strong>IMPROVES</strong> with increasing \(M\) (trades bandwidth for power). PSK/QAM performance <strong>DEGRADES</strong> with increasing \(M\).</p>
+    </div>
+
+    <div class="trap-box" style="margin:0;">
+      <div class="trap-title">⚠️ Trap #8: Gray Coding Target</div>
+      <p>Gray coding minimizes <strong>bit</strong> errors, not symbol errors. The symbol error rate doesn't change with bit mapping.</p>
+    </div>
+
+    <div class="trap-box" style="margin:0;">
+      <div class="trap-title">⚠️ Trap #9: \(d_{\min}\) Is King</div>
+      <p>\(d_{\min}\) determines error performance, not individual signal energies. Two constellations with the same \(d_{\min}\) have similar error rates.</p>
+    </div>
+
+    <div class="trap-box" style="margin:0;">
+      <div class="trap-title">⚠️ Trap #10: Basis Non-Uniqueness</div>
+      <p>The Gram-Schmidt orthonormal basis is <strong>NOT unique</strong>. Different orderings yield different bases. But distances, angles, and energies are <strong>invariant</strong>.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- FLASHCARDS -->
+<!-- ============================================================ -->
+<div class="separator"></div>
+<div class="section-header" id="flashcards">
+  <div class="section-number" style="background:linear-gradient(135deg,var(--accent-blue),var(--accent-green));">🃏</div>
+  <div>
+    <div class="section-title">Flashcards</div>
+    <span class="tag tag-blue">Study Tool</span>
+  </div>
+</div>
+
+<div class="widget-container">
+  <div class="widget-title">🃏 Click card to flip • Use arrows to navigate</div>
+  <div class="flashcard-deck">
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="flashcard-face flashcard-front">
+        <div style="font-size:0.78rem;color:var(--accent-blue);font-weight:700;margin-bottom:12px;" id="fcCategory">CATEGORY</div>
+        <div style="font-size:1.1rem;font-weight:600;" id="fcQuestion">Question</div>
+      </div>
+      <div class="flashcard-face flashcard-back">
+        <div style="font-size:0.78rem;color:var(--accent-green);font-weight:700;margin-bottom:12px;">ANSWER</div>
+        <div style="font-size:0.95rem;" id="fcAnswer">Answer</div>
+      </div>
+    </div>
+  </div>
+  <div class="flashcard-counter" id="fcCounter" style="text-align:center;margin-top:12px;">1 / 15</div>
+  <div class="flashcard-nav">
+    <button onclick="prevCard()">← Previous</button>
+    <button onclick="nextCard()">Next →</button>
+    <button onclick="shuffleCards()" style="border-color:var(--accent-purple);color:var(--accent-purple);">🔀 Shuffle</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- QUIZ -->
+<!-- ============================================================ -->
+<div class="separator"></div>
+<div class="section-header" id="quiz">
+  <div class="section-number" style="background:linear-gradient(135deg,var(--accent-pink),var(--accent-purple));">✍️</div>
+  <div>
+    <div class="section-title">Interactive Quiz</div>
+    <span class="tag tag-pink">Test Yourself</span>
+  </div>
+</div>
+
+<div class="quiz-score-bar">
+  <span style="font-weight:700;font-size:0.88rem;">Score:</span>
+  <div class="quiz-score-fill"><div class="quiz-score-fill-inner" id="quizScoreFill" style="width:0%"></div></div>
+  <span id="quizScoreText" style="font-family:var(--font-mono);font-size:0.85rem;color:var(--accent-green);">0 / 10</span>
+  <button onclick="resetQuiz()" class="widget-btn" style="font-size:0.75rem;padding:6px 12px;">Reset</button>
+</div>
+
+<div id="quizContainer"></div>
+
+<!-- ============================================================ -->
+<!-- REVISION PROBLEMS -->
+<!-- ============================================================ -->
+<div class="separator"></div>
+<div class="section-header" id="revision">
+  <div class="section-number" style="background:linear-gradient(135deg,var(--accent-green),var(--accent-blue));">📝</div>
+  <div>
+    <div class="section-title">Revision Problems</div>
+    <span class="tag tag-green">Practice</span>
+  </div>
+</div>
+
+<div class="collapsible-header" onclick="toggleCollapsible(this)">
+  <h3>📝 Problem 1: Gram-Schmidt Application</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <p><strong>Problem:</strong> Given three signals \(s_1(t) = 2\) for \(0 \le t \le 1\), \(s_2(t) = -2\) for \(0 \le t \le 1\), and \(s_3(t) = 2\) for \(0 \le t \le 0.5\), \(s_3(t) = -2\) for \(0.5 < t \le 1\). Apply the Gram-Schmidt procedure.</p>
+    <div class="insight-box">
+      <div class="insight-title">💡 Hint</div>
+      <p>Start with \(\varepsilon_1 = \int_0^1 4\,dt = 4\). Then check if \(s_2(t)\) is a scalar multiple of \(\psi_1(t)\). For \(s_3(t)\), compute the projection \(c_{31}\) carefully — the integral of a product of a sign-changing function with a constant may yield interesting results.</p>
+    </div>
+  </div>
+</div>
+
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>📝 Problem 2: BER Comparison</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <p><strong>Problem:</strong> A system requires \(P_E \le 10^{-5}\). Compare the required \(\varepsilon_b/N_0\) (in dB) for: (a) Binary antipodal, (b) Binary orthogonal, (c) QPSK, (d) 8-PSK.</p>
+    <div class="insight-box">
+      <div class="insight-title">💡 Hint</div>
+      <p>Use \(Q^{-1}(10^{-5}) \approx 4.265\). For antipodal: \(2\varepsilon_b/N_0 = (4.265)^2\). QPSK has the same \(\varepsilon_b/N_0\) requirement as BPSK (why?). For 8-PSK, use the \(d_{\min}\) formula.</p>
+    </div>
+  </div>
+</div>
+
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>📝 Problem 3: QAM Constellation Design</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <p><strong>Problem:</strong> For 16-QAM with minimum distance \(d_{\min} = 2\), calculate: (a) the average energy per symbol, (b) the average energy per bit, (c) the symbol error probability at \(N_0 = 0.5\).</p>
+    <div class="insight-box">
+      <div class="insight-title">💡 Hint</div>
+      <p>16-QAM has signal points at \((\pm 1, \pm 1), (\pm 1, \pm 3), (\pm 3, \pm 1), (\pm 3, \pm 3)\) when \(d_{\min} = 2\). Average energy = mean of all \(\|\mathbf{s}_i\|^2\). Remember \(k = \log_2(16) = 4\) bits/symbol.</p>
+    </div>
+  </div>
+</div>
+
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>📝 Problem 4: M-FSK Bandwidth-Power Trade-off</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <p><strong>Problem:</strong> Explain why M-FSK requires increasing bandwidth but decreasing power as \(M\) increases. If bandwidth doubles from 4-FSK to 8-FSK, estimate the power saving in dB.</p>
+    <div class="insight-box">
+      <div class="insight-title">💡 Hint</div>
+      <p>Each new frequency adds a new dimension. More dimensions → more "room" for noise to be distributed → lower probability of error at the same SNR. Think about orthogonal signal space geometry — the angle between any two signals is always 90°, regardless of \(M\).</p>
+    </div>
+  </div>
+</div>
+
+<div class="collapsible-header mt-1" onclick="toggleCollapsible(this)">
+  <h3>📝 Problem 5: Signal Space Distances</h3>
+  <div class="collapsible-icon">▼</div>
+</div>
+<div class="collapsible-body">
+  <div class="collapsible-content">
+    <p><strong>Problem:</strong> Two binary signals are given by \(s_1(t) = A\sin(2\pi t/T_b)\) and \(s_2(t) = A\cos(2\pi t/T_b)\) for \(0 \le t \le T_b\). (a) Are they orthogonal? (b) Find \(d_{12}\). (c) Express the BER. (d) Compare with antipodal signaling using the same energy per bit.</p>
+    <div class="insight-box">
+      <div class="insight-title">💡 Hint</div>
+      <p>Compute \(\int_0^{T_b} s_1(t)s_2(t)\,dt = A^2\int_0^{T_b} \sin(2\pi t/T_b)\cos(2\pi t/T_b)\,dt\). Use the identity \(\sin\theta\cos\theta = \frac{1}{2}\sin(2\theta)\). The energy of each signal is \(\varepsilon_b = A^2 T_b/2\).</p>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="separator"></div>
+<div style="text-align:center;padding:40px 20px 20px;color:var(--text-muted);font-size:0.82rem;">
+  <p style="margin-bottom:8px;"><strong style="color:var(--text-secondary);">KIE2008 Communication Systems</strong> — Chapter 5 Study Guide</p>
+  <p>Based on Proakis &amp; Salehi, <em>Digital Communications</em>, 5th Ed., 2014, Chapter 8</p>
+  <p style="margin-top:8px;">Built with 💙 for exam success</p>
+</div>
+
+</div><!-- end main-content -->
+
+<!-- ============================================================ -->
+<!-- SCRIPTS -->
+<!-- ============================================================ -->
+<script>
+// ===== PROGRESS BAR =====
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  // Nav scrolled state
+  document.getElementById('topNav').classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// ===== COLLAPSIBLE SECTIONS =====
+function toggleCollapsible(header) {
+  header.classList.toggle('active');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ===== CONSTELLATION VISUALIZER =====
+let constType = 'psk';
+function setConstellation(type, btn) {
+  constType = type;
+  document.querySelectorAll('.widget-controls .widget-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // constrain M
+  const slider = document.getElementById('constM');
+  if (type === 'pam') { slider.min = 2; slider.max = 16; }
+  else if (type === 'fsk') { slider.min = 2; slider.max = 8; }
+  else if (type === 'psk') { slider.min = 2; slider.max = 64; }
+  else { slider.min = 4; slider.max = 64; }
+  // snap M to power of 2
+  let M = parseInt(slider.value);
+  M = Math.pow(2, Math.round(Math.log2(M)));
+  M = Math.max(parseInt(slider.min), Math.min(parseInt(slider.max), M));
+  slider.value = M;
+  updateConstellation();
+}
+
+function updateConstellation() {
+  const slider = document.getElementById('constM');
+  let M = parseInt(slider.value);
+  // snap to nearest power of 2
+  M = Math.pow(2, Math.round(Math.log2(M)));
+  M = Math.max(parseInt(slider.min), Math.min(parseInt(slider.max), M));
+  slider.value = M;
+  document.getElementById('constMVal').textContent = M;
+  drawConstellation(constType, M);
+}
+
+function drawConstellation(type, M) {
+  const canvas = document.getElementById('constellationCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const cx = W / 2, cy = H / 2;
+
+  // clear
+  ctx.fillStyle = 'rgba(10,10,26,0.95)';
+  ctx.fillRect(0, 0, W, H);
+
+  // grid
+  const gridSize = Math.min(W, H) * 0.38;
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let i = -4; i <= 4; i++) {
+    const x = cx + (i / 4) * gridSize;
+    const y = cy + (i / 4) * gridSize;
+    ctx.beginPath(); ctx.moveTo(x, cy - gridSize - 20); ctx.lineTo(x, cy + gridSize + 20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx - gridSize - 20, y); ctx.lineTo(cx + gridSize + 20, y); ctx.stroke();
+  }
+
+  // axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(cx - gridSize - 30, cy); ctx.lineTo(cx + gridSize + 30, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy - gridSize - 30); ctx.lineTo(cx, cy + gridSize + 30); ctx.stroke();
+
+  // axis labels
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '12px Inter';
+  ctx.textAlign = 'center';
+  if (type !== 'fsk') {
+    ctx.fillText('In-Phase (I)', cx + gridSize - 10, cy + 20);
+    ctx.save(); ctx.translate(cx - 18, cy - gridSize + 20); ctx.rotate(-Math.PI/2); ctx.fillText('Quadrature (Q)', 0, 0); ctx.restore();
+  }
+
+  // compute points
+  let points = [];
+  let dmin = Infinity;
+  const scale = gridSize * 0.7;
+
+  if (type === 'psk') {
+    for (let i = 0; i < M; i++) {
+      const angle = (2 * Math.PI * i) / M;
+      points.push({ x: Math.cos(angle), y: Math.sin(angle) });
+    }
+    // draw circle
+    ctx.strokeStyle = 'rgba(0,212,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.arc(cx, cy, scale, 0, 2 * Math.PI); ctx.stroke();
+    ctx.setLineDash([]);
+    dmin = 2 * Math.sin(Math.PI / M);
+  } else if (type === 'qam') {
+    const side = Math.round(Math.sqrt(M));
+    for (let i = 0; i < side; i++) {
+      for (let j = 0; j < side; j++) {
+        points.push({ x: (2 * i - side + 1) / (side - 1), y: (2 * j - side + 1) / (side - 1) });
+      }
+    }
+    dmin = 2 / (Math.round(Math.sqrt(M)) - 1);
+  } else if (type === 'pam') {
+    for (let i = 0; i < M; i++) {
+      points.push({ x: (2 * i - M + 1) / (M - 1), y: 0 });
+    }
+    dmin = 2 / (M - 1);
+  } else if (type === 'fsk') {
+    // Show only 2D projection for visualization
+    if (M === 2) {
+      points = [{ x: 1, y: 0 }, { x: 0, y: 1 }];
+    } else {
+      // arrange in a circle-like representation
+      for (let i = 0; i < M; i++) {
+        const angle = (2 * Math.PI * i) / M;
+        points.push({ x: Math.cos(angle), y: Math.sin(angle) });
+      }
+    }
+    dmin = Math.sqrt(2);
+  }
+
+  const showDmin = document.getElementById('showDmin').checked;
+
+  // find actual dmin for drawing
+  let dminPairs = [];
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      const d = Math.sqrt((points[i].x - points[j].x) ** 2 + (points[i].y - points[j].y) ** 2);
+      if (d < dmin + 0.01 && d > 0.001) {
+        dminPairs.push([i, j]);
+      }
+    }
+  }
+
+  // draw dmin lines
+  if (showDmin && dminPairs.length > 0 && dminPairs.length < 100) {
+    ctx.strokeStyle = 'rgba(239,68,68,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    for (const [i, j] of dminPairs) {
+      ctx.beginPath();
+      ctx.moveTo(cx + points[i].x * scale, cy - points[i].y * scale);
+      ctx.lineTo(cx + points[j].x * scale, cy - points[j].y * scale);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+
+  // draw points with glow
+  const colors = ['#00d4ff', '#8b5cf6', '#10b981', '#ec4899', '#f59e0b', '#ef4444'];
+  for (let i = 0; i < points.length; i++) {
+    const px = cx + points[i].x * scale;
+    const py = cy - points[i].y * scale;
+    const color = colors[i % colors.length];
+
+    // glow
+    const grad = ctx.createRadialGradient(px, py, 0, px, py, 18);
+    grad.addColorStop(0, color + '60');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(px, py, 18, 0, 2 * Math.PI); ctx.fill();
+
+    // point
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(px, py, 5, 0, 2 * Math.PI); ctx.fill();
+
+    // label
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '10px JetBrains Mono';
+    ctx.textAlign = 'center';
+    if (points.length <= 16) {
+      ctx.fillText('s' + i, px, py - 14);
+    }
+  }
+
+  // title
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.font = 'bold 14px Inter';
+  ctx.textAlign = 'left';
+  const typeLabel = type.toUpperCase();
+  ctx.fillText(M + '-' + typeLabel + ' Constellation', 16, 28);
+
+  // info
+  const infoEl = document.getElementById('constInfo');
+  const k = Math.log2(M);
+  let infoText = `M=${M}  |  k=${k} bits/symbol  |  Points: ${points.length}`;
+  if (type === 'psk') infoText += `  |  d_min = 2√εs·sin(π/${M}) ≈ ${(2*Math.sin(Math.PI/M)).toFixed(4)}√εs`;
+  else if (type === 'qam') infoText += `  |  d_min = √(6εav/(M-1))`;
+  else if (type === 'pam') infoText += `  |  d_min = 2d (uniform spacing)`;
+  else if (type === 'fsk') infoText += `  |  d_min = √(2εs)  |  ${M}D space`;
+  infoEl.textContent = infoText;
+}
+
+// ===== BER CALCULATOR =====
+function Qfunc(x) {
+  if (x < 0) return 1 - Qfunc(-x);
+  // Approximation
+  const t = 1 / (1 + 0.3275911 * x);
+  const poly = t * (0.254829592 + t * (-0.284496736 + t * (1.421413741 + t * (-1.453152027 + t * 1.061405429))));
+  return poly * Math.exp(-x * x / 2);
+}
+
+function berBPAM(ebno) { return Qfunc(Math.sqrt(2 * ebno)); }
+function berBOrth(ebno) { return Qfunc(Math.sqrt(ebno)); }
+function berQPSK(ebno) { return Qfunc(Math.sqrt(2 * ebno)); } // same as BPSK for BER
+function ber8PSK(ebno) {
+  const M = 8, k = 3;
+  const arg = Math.sqrt(2 * k * ebno) * Math.sin(Math.PI / M);
+  return (2 / k) * Qfunc(arg);
+}
+function ber16QAM(ebno) {
+  const M = 16, k = 4;
+  const arg = Math.sqrt(3 * k * ebno / (M - 1));
+  return (4 / k) * (1 - 1 / Math.sqrt(M)) * Qfunc(arg);
+}
+
+function updateBER() {
+  const db = parseFloat(document.getElementById('ebnoDB').value);
+  document.getElementById('ebnoVal').textContent = db.toFixed(1) + ' dB';
+  drawBERcurves();
+
+  const ebno = Math.pow(10, db / 10);
+  let readout = `Eb/N0 = ${db.toFixed(1)} dB (${ebno.toFixed(2)} linear)  |  `;
+  readout += `BPAM: ${berBPAM(ebno).toExponential(2)}  |  `;
+  readout += `Orth: ${berBOrth(ebno).toExponential(2)}  |  `;
+  readout += `QPSK: ${berQPSK(ebno).toExponential(2)}  |  `;
+  readout += `8PSK: ${ber8PSK(ebno).toExponential(2)}  |  `;
+  readout += `16QAM: ${ber16QAM(ebno).toExponential(2)}`;
+  document.getElementById('berReadout').textContent = readout;
+}
+
+function drawBERcurves() {
+  const canvas = document.getElementById('berCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+
+  ctx.fillStyle = 'rgba(10,10,26,0.95)';
+  ctx.fillRect(0, 0, W, H);
+
+  const margin = { top: 40, right: 30, bottom: 50, left: 65 };
+  const pw = W - margin.left - margin.right;
+  const ph = H - margin.top - margin.bottom;
+
+  const xMin = 0, xMax = 20;
+  const yMinExp = -8, yMaxExp = 0;
+
+  function toCanvasX(db) { return margin.left + (db - xMin) / (xMax - xMin) * pw; }
+  function toCanvasY(logBer) { return margin.top + (yMaxExp - logBer) / (yMaxExp - yMinExp) * ph; }
+
+  // grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let db = xMin; db <= xMax; db += 2) {
+    const x = toCanvasX(db);
+    ctx.beginPath(); ctx.moveTo(x, margin.top); ctx.lineTo(x, H - margin.bottom); ctx.stroke();
+  }
+  for (let e = yMinExp; e <= yMaxExp; e++) {
+    const y = toCanvasY(e);
+    ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(W - margin.right, y); ctx.stroke();
+  }
+
+  // axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(margin.left, margin.top); ctx.lineTo(margin.left, H - margin.bottom); ctx.lineTo(W - margin.right, H - margin.bottom); ctx.stroke();
+
+  // x labels
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.font = '11px Inter';
+  ctx.textAlign = 'center';
+  for (let db = xMin; db <= xMax; db += 2) {
+    ctx.fillText(db + '', toCanvasX(db), H - margin.bottom + 18);
+  }
+  ctx.fillText('Eb/N0 (dB)', W / 2, H - 8);
+
+  // y labels
+  ctx.textAlign = 'right';
+  for (let e = yMinExp; e <= yMaxExp; e++) {
+    ctx.fillText('10^' + e, margin.left - 8, toCanvasY(e) + 4);
+  }
+  ctx.save();
+  ctx.translate(14, H / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center';
+  ctx.fillText('Bit Error Rate', 0, 0);
+  ctx.restore();
+
+  // curves
+  const curves = [
+    { id: 'showBPAM', fn: berBPAM, color: '#00d4ff', label: 'Binary PAM (BPSK)' },
+    { id: 'showBOrth', fn: berBOrth, color: '#10b981', label: 'Binary Orthogonal' },
+    { id: 'showQPSK', fn: berQPSK, color: '#8b5cf6', label: 'QPSK' },
+    { id: 'show8PSK', fn: ber8PSK, color: '#ec4899', label: '8-PSK' },
+    { id: 'show16QAM', fn: ber16QAM, color: '#f59e0b', label: '16-QAM' },
+  ];
+
+  let legendY = margin.top + 10;
+  for (const curve of curves) {
+    if (!document.getElementById(curve.id).checked) continue;
+    ctx.strokeStyle = curve.color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    let started = false;
+    for (let db = xMin; db <= xMax; db += 0.2) {
+      const ebno = Math.pow(10, db / 10);
+      let ber = curve.fn(ebno);
+      if (ber < 1e-9) ber = 1e-9;
+      const logBer = Math.log10(ber);
+      const x = toCanvasX(db);
+      const y = toCanvasY(logBer);
+      if (y >= margin.top && y <= H - margin.bottom) {
+        if (!started) { ctx.moveTo(x, y); started = true; }
+        else ctx.lineTo(x, y);
+      }
+    }
+    ctx.stroke();
+
+    // legend
+    ctx.fillStyle = curve.color;
+    ctx.fillRect(W - margin.right - 160, legendY, 14, 3);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '11px Inter';
+    ctx.textAlign = 'left';
+    ctx.fillText(curve.label, W - margin.right - 140, legendY + 5);
+    legendY += 18;
+  }
+
+  // marker line
+  const markerDB = parseFloat(document.getElementById('ebnoDB').value);
+  const mx = toCanvasX(markerDB);
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(mx, margin.top); ctx.lineTo(mx, H - margin.bottom); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 11px Inter';
+  ctx.textAlign = 'center';
+  ctx.fillText(markerDB.toFixed(1) + ' dB', mx, margin.top - 8);
+
+  // title
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.font = 'bold 14px Inter';
+  ctx.textAlign = 'left';
+  ctx.fillText('BER vs Eb/N0', margin.left + 8, margin.top - 14);
+}
+
+// ===== FLASHCARDS =====
+const flashcards = [
+  { cat: 'Fundamentals', q: 'What is the relationship between M and k in M-ary modulation?', a: 'M = 2^k, where k is the number of bits per symbol and M is the number of distinct waveforms.' },
+  { cat: 'Gram-Schmidt', q: 'What does the Gram-Schmidt procedure produce?', a: 'N ≤ M orthonormal basis functions {ψₙ(t)} that span the signal space. Each signal is represented as a vector in this space.' },
+  { cat: 'Gram-Schmidt', q: 'Is the Gram-Schmidt basis unique?', a: 'NO! Different orderings produce different bases. However, distances, energies, and angles between signals are INVARIANT.' },
+  { cat: 'Binary PAM', q: 'What is the error probability for binary antipodal signaling?', a: 'P_E = Q(√(2εb/N₀)). This is the best-performing binary scheme.' },
+  { cat: 'Binary Orthogonal', q: 'What is the error probability for binary orthogonal signaling?', a: 'P_E = Q(√(εb/N₀)). Note: no factor of 2 inside the square root — 3 dB worse than antipodal.' },
+  { cat: 'Key Comparison', q: 'How much extra energy does orthogonal signaling need compared to antipodal for the same P_E?', a: '3 dB (factor of 2) more energy. This is because d_min² is 4εb for antipodal vs 2εb for orthogonal.' },
+  { cat: 'Energy', q: 'What is the relationship between εs and εb?', a: 'εs = k · εb = (log₂ M) · εb. Energy per symbol = (bits per symbol) × energy per bit.' },
+  { cat: 'M-PSK', q: 'What is d_min for M-PSK?', a: 'd_min = 2√εs · sin(π/M). For large M, this approximates to 2π√εs/M.' },
+  { cat: 'M-PSK', q: 'How much additional energy per bit is needed when doubling M in PSK?', a: 'Approximately +6 dB per bit. Performance degrades rapidly with increasing M.' },
+  { cat: 'QAM vs PSK', q: 'For what values of M is QAM superior to PSK?', a: 'QAM is superior for M > 4. At M = 4, they have identical performance (QPSK = 4-QAM in terms of geometry).' },
+  { cat: 'M-FSK', q: 'How does M-FSK performance change with increasing M?', a: 'Performance IMPROVES (requires less power). This is OPPOSITE to PSK/QAM! M-FSK trades bandwidth for power.' },
+  { cat: 'M-FSK', q: 'How many dimensions does M-FSK use?', a: 'M dimensions — one for each frequency. This is unique: PSK and QAM use only 2D.' },
+  { cat: 'Gray Coding', q: 'What does Gray coding minimize?', a: 'Bit errors (not symbol errors). Adjacent constellation points differ by only 1 bit, so most symbol errors cause just 1 bit error.' },
+  { cat: 'M-ASK', q: 'What happens to energy when baseband PAM is modulated onto a carrier?', a: 'Bandpass energy = HALF of baseband energy (when fc >> W). This is because cos²(2πfct) averages to 1/2.' },
+  { cat: 'General', q: 'What single parameter determines error performance?', a: 'd_min (minimum Euclidean distance). Two constellations with the same d_min have similar error rates, regardless of individual signal energies.' },
+  { cat: 'Receiver', q: 'Name the two types of optimum demodulators.', a: '1) Correlation-type (coherent): multiplies by reference & integrates. 2) Matched-filter: uses h(t) = s(T-t) & samples output.' },
+  { cat: 'PSK Geometry', q: 'What distinguishes PSK constellation from QAM?', a: 'PSK: all points on a CIRCLE (same energy). QAM: points on a GRID (different energies). QAM makes more efficient use of signal space for M > 4.' },
+];
+
+let currentCard = 0;
+function renderCard() {
+  const fc = flashcards[currentCard];
+  document.getElementById('fcCategory').textContent = fc.cat.toUpperCase();
+  document.getElementById('fcQuestion').textContent = fc.q;
+  document.getElementById('fcAnswer').textContent = fc.a;
+  document.getElementById('fcCounter').textContent = (currentCard + 1) + ' / ' + flashcards.length;
+  document.getElementById('flashcard').classList.remove('flipped');
+}
+function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+function nextCard() { currentCard = (currentCard + 1) % flashcards.length; renderCard(); }
+function prevCard() { currentCard = (currentCard - 1 + flashcards.length) % flashcards.length; renderCard(); }
+function shuffleCards() {
+  for (let i = flashcards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [flashcards[i], flashcards[j]] = [flashcards[j], flashcards[i]];
+  }
+  currentCard = 0; renderCard();
+}
+
+// ===== QUIZ =====
+const quizData = [
+  {
+    q: 'In binary antipodal signaling, the two signal vectors in 1D signal space are:',
+    opts: ['s₁ = √εb, s₂ = 0', 's₁ = √εb, s₂ = -√εb', 's₁ = √(2εb), s₂ = -√(2εb)', 's₁ = εb, s₂ = -εb'],
+    ans: 1,
+    expl: 'Antipodal means mirror images. With unit-energy basis ψ(t), s₁ = +√εb and s₂ = -√εb on a single axis.'
+  },
+  {
+    q: 'The 3 dB advantage of antipodal over orthogonal signaling arises because:',
+    opts: ['Antipodal uses half the bandwidth', 'Antipodal has larger d_min for the same energy', 'Orthogonal uses more dimensions', 'Antipodal uses coherent detection'],
+    ans: 1,
+    expl: 'd²_min = 4εb (antipodal) vs 2εb (orthogonal). That factor of 2 = 3 dB in energy.'
+  },
+  {
+    q: 'For M-PSK, what happens to the required Eb/N0 when M is doubled?',
+    opts: ['Decreases by 3 dB', 'Stays the same', 'Increases by approximately 6 dB', 'Increases by approximately 3 dB'],
+    ans: 2,
+    expl: 'For large M, d_min ≈ 2π√εs/M. Doubling M halves d_min, requiring 4× energy (6 dB) to maintain the same performance.'
+  },
+  {
+    q: 'Which statement about M-FSK is TRUE?',
+    opts: ['Performance degrades as M increases', 'It uses 2D signal space regardless of M', 'Required SNR/bit decreases as M increases', 'It is more bandwidth-efficient than PSK'],
+    ans: 2,
+    expl: 'M-FSK trades bandwidth for power. More frequencies (dimensions) means better noise immunity, so less power is needed.'
+  },
+  {
+    q: 'The relationship between εs and εb is:',
+    opts: ['εs = εb / log₂(M)', 'εs = εb × M', 'εs = εb × log₂(M)', 'εs = εb × 2^M'],
+    ans: 2,
+    expl: 'εs = k × εb where k = log₂(M) is the number of bits per symbol.'
+  },
+  {
+    q: 'For M-ary ASK, the bandpass signal energy is related to baseband energy by:',
+    opts: ['Equal', 'Twice the baseband', 'Half the baseband', 'Depends on carrier frequency'],
+    ans: 2,
+    expl: 'When fc >> W, the cos²(2πfct) factor averages to 1/2, so bandpass energy = baseband/2.'
+  },
+  {
+    q: 'Gray coding in M-PSK minimizes:',
+    opts: ['Symbol error rate', 'Bit error rate', 'Required bandwidth', 'Required signal energy'],
+    ans: 1,
+    expl: 'Gray coding ensures adjacent constellation points differ by only 1 bit, so most symbol errors cause only 1 bit error.'
+  },
+  {
+    q: 'For QAM vs PSK with the same M, which is more power efficient for M > 4?',
+    opts: ['PSK', 'QAM', 'They are identical', 'Depends on the channel'],
+    ans: 1,
+    expl: 'QAM spreads points over a grid (2D), while PSK constrains them to a circle. The grid allows larger d_min for the same average energy when M > 4.'
+  },
+  {
+    q: 'The Gram-Schmidt procedure guarantees:',
+    opts: ['A unique orthonormal basis', 'N = M basis functions always', 'N ≤ M orthonormal basis functions', 'Maximum energy preservation'],
+    ans: 2,
+    expl: 'N ≤ M because linearly dependent signals don\'t produce new basis functions. The basis is NOT unique — different orderings give different bases.'
+  },
+  {
+    q: 'QPSK has the same bit error rate as:',
+    opts: ['4-PAM', 'BPSK', '8-PSK', '4-FSK'],
+    ans: 1,
+    expl: 'QPSK transmits 2 bits/symbol but uses 2× energy per symbol. The BER = Q(√(2εb/N₀)), identical to BPSK.'
+  }
+];
+
+let quizScore = 0, quizAnswered = 0;
+
+function buildQuiz() {
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = '';
+  quizScore = 0; quizAnswered = 0;
+  updateQuizScore();
+
+  quizData.forEach((q, qi) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'quiz-question';
+    qDiv.id = 'quiz-q-' + qi;
+
+    let optsHTML = '';
+    q.opts.forEach((opt, oi) => {
+      optsHTML += `<div class="quiz-option" data-q="${qi}" data-o="${oi}" onclick="selectAnswer(${qi},${oi})">${String.fromCharCode(65+oi)}) ${opt}</div>`;
+    });
+
+    qDiv.innerHTML = `
+      <div class="quiz-q-text"><span class="quiz-q-num">Q${qi+1}.</span> ${q.q}</div>
+      <div class="quiz-options">${optsHTML}</div>
+      <div class="quiz-explanation" id="quiz-expl-${qi}">💡 ${q.expl}</div>
+    `;
+    container.appendChild(qDiv);
+  });
+}
+
+function selectAnswer(qi, oi) {
+  const opts = document.querySelectorAll(`[data-q="${qi}"]`);
+  if (opts[0].classList.contains('disabled')) return;
+
+  opts.forEach(o => {
+    o.classList.add('disabled');
+    const oIdx = parseInt(o.dataset.o);
+    if (oIdx === quizData[qi].ans) o.classList.add('correct');
+    else if (oIdx === oi) o.classList.add('wrong');
+  });
+
+  document.getElementById('quiz-expl-' + qi).style.display = 'block';
+  quizAnswered++;
+  if (oi === quizData[qi].ans) quizScore++;
+  updateQuizScore();
+}
+
+function updateQuizScore() {
+  document.getElementById('quizScoreText').textContent = quizScore + ' / ' + quizData.length;
+  document.getElementById('quizScoreFill').style.width = (quizAnswered > 0 ? (quizScore / quizData.length) * 100 : 0) + '%';
+}
+
+function resetQuiz() { buildQuiz(); }
+
+// ===== ACTIVE NAV HIGHLIGHTING =====
+const sections = ['module1','module2','module3','module4','constellation-viz','ber-calc','formulas','traps','flashcards','quiz','revision'];
+window.addEventListener('scroll', () => {
+  let current = '';
+  for (const id of sections) {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= 120) current = id;
+  }
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+
+// ===== INIT =====
+window.addEventListener('DOMContentLoaded', () => {
+  renderCard();
+  buildQuiz();
+  updateConstellation();
+  updateBER();
+});
+
+// ===== RESIZE HANDLER =====
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    updateConstellation();
+    drawBERcurves();
+  }, 200);
+});
+</script>
+
+</body>
+</html>
