@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waveform Encoding: Analog to Digital Conversion</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-grad-1: #0f172a;
+            --bg-grad-2: #1e1b4b;
+            --primary: #818cf8;
+            --secondary: #c084fc;
+            --accent: #38bdf8;
+            --success: #34d399;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2));
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+        
+        h1 { 
+            font-size: 3.5rem; 
+            text-align: center; 
+            background: -webkit-linear-gradient(45deg, var(--primary), var(--secondary)); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            margin-bottom: 1rem;
+        }
+
+        h2 { 
+            font-size: 2.2rem; 
+            color: var(--accent); 
+            border-bottom: 2px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 4rem 2rem; 
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 0.8s forwards;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .grid-2 { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 2rem; 
+            align-items: center;
+        }
+
+        .interactive-section {
+            background: rgba(0,0,0,0.25);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px dashed var(--primary);
+        }
+
+        .deep-dive {
+            border-left: 4px solid var(--secondary);
+            padding: 1.5rem;
+            background: linear-gradient(90deg, rgba(192, 132, 252, 0.1) 0%, transparent 100%);
+            margin: 2rem 0;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .deep-dive h3 { 
+            color: var(--secondary); 
+            margin-top: 0; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        ul { padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        .highlight { color: var(--accent); font-weight: 600; }
+
+        .equation-box {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Controls */
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+        input[type=range] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        canvas {
+            background: #000;
+            border-radius: 12px;
+            width: 100%;
+            height: 250px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .badge {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+        .delay-4 { animation-delay: 0.8s; }
+        .delay-5 { animation-delay: 1.0s; }
+
+        @media(max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Waveform Encoding</h1>
+    <p style="text-align: center; color: var(--text-muted); font-size: 1.2rem; margin-bottom: 3rem;">
+        An interactive guide through Analog to Digital Conversion (Slides 40 - 58)
+    </p>
+
+    <!-- Section 1: Intro & PCM -->
+    <div class="glass-card delay-1">
+        <span class="badge">Slides 40 - 42</span>
+        <h2>1. Introduction to Waveform Encoding</h2>
+        <p>Waveform coding schemes aim to reproduce the source's continuous waveform at the destination with minimal distortion. The properties of the waveform (not the semantic structure of the source) guide the design.</p>
+        
+        <p>Four main methods are covered:</p>
+        <ul>
+            <li><span class="highlight">PCM</span>: Pulse Code Modulation</li>
+            <li><span class="highlight">DPCM</span>: Differential PCM</li>
+            <li><span class="highlight">DM</span>: Delta Modulation</li>
+            <li><span class="highlight">ADM</span>: Adaptive DM</li>
+        </ul>
+
+        <h3>Pulse Code Modulation (PCM)</h3>
+        <p>A pulse code modulator consists of three stages: <strong>Sampler &rarr; Quantizer &rarr; Encoder</strong>.</p>
+        <p>Assuming a signal bounded by \([-x_{\max}, x_{\max}]\), sampled above the Nyquist rate (\(f_s \ge 2W\)), we map the infinite continuous values into \(N = 2^v\) discrete levels.</p>
+        <div class="equation-box">
+            \[ \text{Step Size } (\Delta) = \frac{2x_{\max}}{N} = \frac{2x_{\max}}{2^v} \]
+        </div>
+    </div>
+
+    <!-- Section 2: SQNR Deep Dive -->
+    <div class="glass-card delay-2">
+        <span class="badge">Slides 43 - 49</span>
+        <h2>2. Quantization Noise & SQNR</h2>
+        <p>In Uniform PCM, the quantized values are the midpoints of the regions. Thus, the quantization error \(\tilde{x}\) is uniformly distributed between \([-\Delta/2, \Delta/2]\).</p>
+        
+        <div class="deep-dive">
+            <h3>🔍 Deep Dive: The 6dB Rule</h3>
+            <p>One of the most crucial takeaways is the relationship between the number of bits (\(v\)) and the Signal-to-Quantization Noise Ratio (SQNR).</p>
+            <div class="equation-box">
+                \[ SQNR \approx 10 \log_{10} \left( \frac{P_x}{x_{\max}^2} \right) + 6v + 4.8 \text{ dB} \]
+            </div>
+            <p><strong>Why 6dB per bit?</strong> Every time you add 1 bit to your encoder, you double the number of quantization levels (\(N\)). This cuts the step size \(\Delta\) in half. Since noise power is proportional to \(\Delta^2\), halving \(\Delta\) quarters the noise power. In decibels, a factor of 4 is exactly \(10 \log_{10}(4) \approx 6 \text{ dB}\). <strong>Each extra bit improves your signal quality by 6dB!</strong></p>
+        </div>
+
+        <h3>Bandwidth of PCM</h3>
+        <p>If we sample at \(f_s\) and use \(v\) bits per sample, the bit rate is \(R = v f_s\). The minimum baseband transmission bandwidth required is:</p>
+        <div class="equation-box">
+            \[ BW_{\text{req}} = \frac{R}{2} = \frac{v f_s}{2} \]
+        </div>
+    </div>
+
+    <!-- Section 3: Nonuniform PCM & Companding -->
+    <div class="glass-card delay-3">
+        <span class="badge">Slides 50 - 52</span>
+        <h2>3. Nonuniform PCM & Companding</h2>
+        <p>Uniform PCM works well when signal values are uniformly distributed. However, speech signals linger near zero amplitude most of the time. Nonuniform PCM gives more finely spaced quantization levels to small amplitudes and coarsely spaced levels to large amplitudes.</p>
+        
+        <p>We achieve this using <strong>Companding</strong> (Compressing + Expanding). We pass the signal through a logarithmic compressor, quantize it uniformly, and then expand it at the receiver.</p>
+
+        <div class="interactive-section">
+            <h3>Interactive: \(\mu\)-Law Compander Curve</h3>
+            <p>Adjust the \(\mu\) parameter to see how the compression curve bows, allocating more dynamic range to lower amplitudes.</p>
+            <div class="grid-2">
+                <div>
+                    <div class="control-group">
+                        <label for="mu-slider"><span>Compression Factor (\(\mu\))</span> <span id="mu-val">255</span></label>
+                        <input type="range" id="mu-slider" min="0" max="255" value="255" oninput="updateCompanding()">
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">
+                        Higher \(\mu\) causes more aggressive compression. \(\mu=0\) yields a linear response (Uniform PCM). \(\mu=255\) is the standard for North American telecommunications.
+                    </p>
+                </div>
+                <canvas id="comp-canvas" width="400" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Delta Modulation -->
+    <div class="glass-card delay-4">
+        <span class="badge">Slides 53 - 56</span>
+        <h2>4. DPCM & Delta Modulation</h2>
+        <p><strong>DPCM</strong> quantizes the <em>difference</em> between adjacent samples rather than the samples themselves. Because samples are highly correlated, the difference is small, requiring fewer bits.</p>
+        <p><strong>Delta Modulation (DM)</strong> is the extreme case of DPCM using only a <strong>1-bit quantizer</strong>. It simply asks: "Is the signal going up or down?" and steps by \(\pm\Delta\).</p>
+
+        <div class="deep-dive">
+            <h3>⚠️ The Most Confusing Part: DM Trade-offs</h3>
+            <p>Delta Modulation suffers from two distinct types of distortion based on the chosen step size \(\Delta\):</p>
+            <ul>
+                <li><strong>Slope Overload:</strong> If \(\Delta\) is too small, the staircase cannot climb fast enough to keep up with rapid signal changes.</li>
+                <li><strong>Granular Noise:</strong> If \(\Delta\) is too large, the staircase violently overshoots and oscillates around slow or flat regions of the signal.</li>
+            </ul>
+        </div>
+
+        <div class="interactive-section">
+            <h3>Interactive: Delta Modulation Simulator</h3>
+            <p>Find the "Goldilocks" step size. Watch what happens when \(\Delta\) is too small or too large.</p>
+            
+            <div class="control-group">
+                <label for="dm-slider"><span>Step Size (\(\Delta\))</span> <span id="dm-val">10</span></label>
+                <input type="range" id="dm-slider" min="1" max="40" value="10" oninput="updateDM()">
+            </div>
+            
+            <canvas id="dm-canvas" width="800" height="300" style="height: 300px;"></canvas>
+            <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">
+                <span><strong style="color: var(--accent)">Blue:</strong> Original Signal</span>
+                <span><strong style="color: var(--secondary)">Purple:</strong> DM Output</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: Adaptive DM -->
+    <div class="glass-card delay-5">
+        <span class="badge">Slides 57 - 58</span>
+        <h2>5. Adaptive Delta Modulation (ADM)</h2>
+        <p>How do we fix the Slope Overload vs. Granular Noise dilemma? By making \(\Delta\) <strong>adaptive</strong>!</p>
+        <p>If the encoder outputs the same bit consecutively (e.g., UP, UP, UP), it means the signal is rising rapidly. ADM will dynamically <em>increase</em> \(\Delta\) to catch up. If the bits alternate (e.g., UP, DOWN, UP, DOWN), it means we are in a flat region, so ADM will <em>decrease</em> \(\Delta\) to reduce granular noise.</p>
+        <div class="equation-box">
+            \[ \Delta_n = \Delta_{n-1} K^{\epsilon_n \times \epsilon_{n-1}} \]
+        </div>
+        <p>Where \(K > 1\), and \(\epsilon\) is the sign of the quantizer output.</p>
+    </div>
+
+</div>
+
+<script>
+    // --- Companding Visualization ---
+    function updateCompanding() {
+        const mu = parseFloat(document.getElementById('mu-slider').value);
+        document.getElementById('mu-val').innerText = mu.toFixed(0);
+        
+        const canvas = document.getElementById('comp-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+        
+        ctx.clearRect(0, 0, W, H);
+        
+        // Draw grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for(let i=1; i<4; i++) {
+            ctx.moveTo(0, i*H/4); ctx.lineTo(W, i*H/4);
+            ctx.moveTo(i*W/4, 0); ctx.lineTo(i*W/4, H);
+        }
+        ctx.stroke();
+
+        // Draw linear reference
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(0, H);
+        ctx.lineTo(W, 0);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Draw curve
+        ctx.beginPath();
+        ctx.strokeStyle = '#818cf8';
+        ctx.lineWidth = 3;
+        
+        for(let x = 0; x <= W; x++) {
+            let nx = x / W; 
+            let ny = mu === 0 ? nx : Math.log(1 + mu * nx) / Math.log(1 + mu);
+            let y = H - (ny * H);
+            
+            if(x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    // --- Delta Modulation Visualization ---
+    let timeOffset = 0;
+    
+    function updateDM() {
+        const delta = parseFloat(document.getElementById('dm-slider').value);
+        document.getElementById('dm-val').innerText = delta.toFixed(1);
+        
+        const canvas = document.getElementById('dm-canvas');
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width;
+        const H = canvas.height;
+        
+        ctx.clearRect(0, 0, W, H);
+        
+        // Draw grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, H/2); ctx.lineTo(W, H/2);
+        ctx.stroke();
+
+        // Signal parameters
+        const amplitude = 100;
+        const freq = 0.03;
+        
+        // Draw original continuous signal
+        ctx.beginPath();
+        ctx.strokeStyle = '#38bdf8'; // accent color
+        ctx.lineWidth = 3;
+        for(let x = 0; x <= W; x++) {
+            // combined sine waves for interesting shape
+            let yVal = Math.sin(x * freq) * amplitude + Math.sin(x * freq * 0.3) * (amplitude/2);
+            let y = H/2 - yVal;
+            if(x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Draw Delta Modulation Staircase
+        ctx.beginPath();
+        ctx.strokeStyle = '#c084fc'; // secondary color
+        ctx.lineWidth = 2;
+        
+        let currentY = H/2;
+        let stepX = 15; // Sampling interval (Ts)
+        
+        for(let x = 0; x <= W; x += stepX) {
+            let targetYVal = Math.sin(x * freq) * amplitude + Math.sin(x * freq * 0.3) * (amplitude/2);
+            let targetY = H/2 - targetYVal;
+            
+            // Draw horizontal part of staircase
+            ctx.moveTo(x, currentY);
+            ctx.lineTo(x + stepX, currentY);
+            
+            // Quantizer logic: +Delta or -Delta
+            if(targetY < currentY) {
+                currentY -= delta; // Go UP
+            } else {
+                currentY += delta; // Go DOWN
+            }
+            
+            // Draw vertical part of staircase
+            ctx.lineTo(x + stepX, currentY);
+        }
+        ctx.stroke();
+
+        // Highlight Overload / Granular Noise conceptually
+        ctx.font = '14px Inter';
+        if(delta < 6) {
+            ctx.fillStyle = '#ef4444';
+            ctx.fillText("⚠️ Severe Slope Overload", 20, 30);
+        } else if(delta > 25) {
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillText("⚠️ Severe Granular Noise", 20, 30);
+        } else {
+            ctx.fillStyle = '#34d399';
+            ctx.fillText("✅ Balanced Step Size", 20, 30);
+        }
+    }
+
+    // Initialize Canvas
+    window.onload = function() {
+        updateCompanding();
+        updateDM();
+    };
+</script>
+
+</body>
+</html>
